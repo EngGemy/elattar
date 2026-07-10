@@ -53,7 +53,7 @@ class CategoryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('التصنيف')->searchable()
-                    ->formatStateUsing(fn (Category $r) => str_repeat('— ', $r->depth) . $r->name),
+                    ->formatStateUsing(fn ($state, Category $record) => str_repeat('— ', max(0, (int) $record->depth)) . $state),
 
                 Tables\Columns\TextColumn::make('products_count')
                     ->label('عدد المنتجات')->counts('products')->badge(),
