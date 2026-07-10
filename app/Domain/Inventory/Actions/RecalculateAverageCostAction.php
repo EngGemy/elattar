@@ -25,7 +25,7 @@ final class RecalculateAverageCostAction
 
             // الرصيد الإجمالي عبر كل المخازن (المتوسط على مستوى الشركة لا المخزن)
             $currentQty = (float) StockLevel::where('variant_id', $variantId)->sum('on_hand');
-            $currentCost = $variant->getRawOriginal('cost_minor') ?? 0;
+            $currentCost = (int) ($variant->getRawOriginal('cost_minor') ?? 0);
 
             $totalQty = $currentQty + $receivedQty;
 

@@ -38,7 +38,7 @@ final class CancelOrderAction
                         warehouseId:   $order->warehouse_id,
                         type:          MovementType::CustomerReturn,
                         qtyDelta:      (float) $line->qty,     // حركة عكسية موجبة
-                        unitCostMinor: $line->getRawOriginal('cost_minor'),
+                        unitCostMinor: (int) ($line->getRawOriginal('cost_minor') ?? 0),
                         reference:     $order,
                         reasonCode:    'order_cancelled',
                         note:          $reason,

@@ -29,7 +29,7 @@ final class TransferStockAction
 
         return DB::transaction(function () use ($transfer) {
             foreach ($transfer->lines()->orderBy('variant_id')->get() as $line) {
-                $cost = $line->variant->getRawOriginal('cost_minor') ?? 0;
+                $cost = (int) ($line->variant->getRawOriginal('cost_minor') ?? 0);
 
                 // خروج من المصدر — يفشل لو الرصيد غير كافٍ
                 $this->recordMovement->execute(

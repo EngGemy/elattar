@@ -36,7 +36,7 @@ final class AdjustStockAction
                     warehouseId:    $adjustment->warehouse_id,
                     type:           MovementType::Adjustment,
                     qtyDelta:       $delta,
-                    unitCostMinor:  $line->variant->getRawOriginal('cost_minor') ?? 0,
+                    unitCostMinor:  (int) ($line->variant->getRawOriginal('cost_minor') ?? 0),
                     reference:      $adjustment,
                     reasonCode:     $adjustment->reason->value,
                     note:           $adjustment->note,

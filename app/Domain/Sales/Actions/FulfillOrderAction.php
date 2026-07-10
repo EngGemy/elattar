@@ -38,7 +38,7 @@ final class FulfillOrderAction
                     warehouseId:   $order->warehouse_id,
                     type:          MovementType::Sale,
                     qtyDelta:      -(float) $line->qty,
-                    unitCostMinor: $line->getRawOriginal('cost_minor'),   // التكلفة المجمّدة
+                    unitCostMinor: (int) ($line->getRawOriginal('cost_minor') ?? 0),   // التكلفة المجمّدة
                     reference:     $order,
                 );
             }

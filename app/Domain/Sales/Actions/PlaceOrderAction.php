@@ -109,7 +109,7 @@ final class PlaceOrderAction
                 $costFactor = in_array($variant->unit, [UnitOfMeasure::Gram, UnitOfMeasure::Ml], true)
                     ? $qty / 1000
                     : $qty;
-                $lineCost = Money::ofMinor($variant->getRawOriginal('cost_minor') ?? 0)->multipliedBy($costFactor);
+                $lineCost = Money::ofMinor((int) ($variant->getRawOriginal('cost_minor') ?? 0))->multipliedBy($costFactor);
 
                 // الضريبة
                 $taxRate  = $variant->product->taxRate();
@@ -135,7 +135,7 @@ final class PlaceOrderAction
                     'qty'                 => $qty,
                     'unit'                => $variant->unit,
                     'unit_price_minor'    => $unitPrice->minor,
-                    'cost_minor'          => $variant->getRawOriginal('cost_minor') ?? 0,
+                    'cost_minor'          => (int) ($variant->getRawOriginal('cost_minor') ?? 0),
                     'line_discount_minor' => $lineDisc->minor,
                     'tax_rate'            => $taxRate / 100,
                     'tax_minor'           => $taxAmount->minor,

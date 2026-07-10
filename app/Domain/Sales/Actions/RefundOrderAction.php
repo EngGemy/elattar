@@ -76,7 +76,7 @@ final class RefundOrderAction
                         warehouseId:   $order->warehouse_id,
                         type:          MovementType::CustomerReturn,
                         qtyDelta:      $qty,
-                        unitCostMinor: $orderLine->getRawOriginal('cost_minor'),
+                        unitCostMinor: (int) ($orderLine->getRawOriginal('cost_minor') ?? 0),
                         reference:     $refund,
                         reasonCode:    $reason,
                     );

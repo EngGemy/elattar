@@ -23,7 +23,7 @@ final class IssueInvoiceAction
             return Invoice::create([
                 'number'      => Invoice::nextNumber(),
                 'order_id'    => $order->id,
-                'total_minor' => $order->getRawOriginal('total_minor'),
+                'total_minor' => (int) $order->getRawOriginal('total_minor'),
                 'issued_at'   => $order->placed_at ?? now(),
             ]);
         });
