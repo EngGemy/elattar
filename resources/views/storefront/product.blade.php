@@ -27,9 +27,10 @@
 
 /* Info */
 .product-info{}
-.product-info .cat-label{font-family:'Reem Kufi';color:var(--clay);font-size:.82rem;letter-spacing:1.5px;font-weight:600}
-.product-info h1{font-family:var(--font-thuluth);font-size:clamp(1.7rem,4vw,2.4rem);margin:6px 0 12px;line-height:1.3;font-weight:400}
-.big-price{font-family:'Reem Kufi';color:var(--gold-deep);font-size:1.9rem;font-weight:700;margin-bottom:6px}
+.product-info .cat-label{font-family:var(--font-ui);color:var(--clay);font-size:.82rem;letter-spacing:1.5px;font-weight:600}
+.product-info h1{font-family:var(--font-thuluth);font-size:clamp(1.9rem,4.5vw,2.8rem);margin:6px 0 12px;line-height:1.45;font-weight:400}
+.product-info .desc,.product-info p{font-family:var(--font-naskh);line-height:1.85}
+.big-price{font-family:var(--font-naskh);color:var(--gold-deep);font-size:1.9rem;font-weight:700;margin-bottom:6px}
 .big-price small{font-size:1rem;color:var(--ink-soft);font-weight:400}
 .long-desc{color:var(--ink-soft);line-height:1.75;font-size:.96rem;margin:16px 0 24px}
 

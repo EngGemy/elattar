@@ -123,7 +123,7 @@
 
 <div class="center">
     @if($shop['logo_url'] ?? null)
-        <img src="{{ $shop['logo_url'] }}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:50%;margin:0 auto 4px;border:2px solid #000">
+        <img src="{{ $shop['logo_url'] }}" alt="" style="width:auto;height:48px;max-width:280px;object-fit:contain;margin:0 auto 8px;display:block">
     @else
         <div class="seal">ع</div>
     @endif

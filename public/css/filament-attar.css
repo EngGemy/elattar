@@ -1,0 +1,90 @@
+/* ══ عبد القادر العطّار — Filament brand theme ══ */
+:root {
+  --attar-gold: #d4a85a;
+  --attar-gold-deep: #b8892b;
+  --attar-ink: #0d0a08;
+  --attar-green: #3b533d;
+  --attar-cream: #f5f0e1;
+}
+
+/* ── Sidebar: cinematic dark + gold ── */
+.fi-sidebar {
+  background: linear-gradient(180deg, #0d0a08 0%, #1a1410 45%, #241a11 100%) !important;
+  border-inline-end: 1px solid rgba(212, 168, 90, 0.22) !important;
+}
+.fi-sidebar-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(212, 168, 90, 0.15) !important;
+  padding-block: 1rem !important;
+}
+.fi-sidebar-nav-groups {
+  gap: 0.35rem;
+}
+.fi-sidebar-item a,
+.fi-sidebar-group-label {
+  color: rgba(245, 240, 225, 0.72) !important;
+}
+.fi-sidebar-item a:hover {
+  background: rgba(212, 168, 90, 0.12) !important;
+  color: var(--attar-gold) !important;
+}
+.fi-sidebar-item-active a,
+.fi-sidebar-item-active .fi-sidebar-item-label {
+  background: linear-gradient(90deg, rgba(200, 134, 10, 0.28), rgba(200, 134, 10, 0.08)) !important;
+  color: var(--attar-gold) !important;
+  border-inline-start: 3px solid var(--attar-gold) !important;
+}
+.fi-sidebar-group-label {
+  color: rgba(212, 168, 90, 0.55) !important;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ── Panoramic logo in sidebar ── */
+.fi-logo img {
+  height: auto !important;
+  max-height: 3.25rem !important;
+  width: auto !important;
+  max-width: min(220px, 92%) !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 4px 14px rgba(212, 168, 90, 0.35));
+}
+.fi-sidebar-header .fi-logo img {
+  max-height: 3.5rem !important;
+  max-width: 100% !important;
+}
+
+/* ── Top bar ── */
+.fi-topbar {
+  background: rgba(250, 246, 239, 0.92) !important;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(200, 134, 10, 0.15) !important;
+}
+
+/* ── Primary buttons gold ── */
+.fi-btn-color-primary {
+  --c-400: var(--attar-gold);
+  --c-500: var(--attar-gold-deep);
+  --c-600: #8a6115;
+}
+
+/* ── Login page cinematic ── */
+.fi-simple-layout {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212, 168, 90, 0.18), transparent 55%),
+    linear-gradient(165deg, #0d0a08 0%, #1a1410 50%, #241a11 100%) !important;
+}
+.fi-simple-main-ctn {
+  background: rgba(250, 246, 239, 0.97) !important;
+  border: 1px solid rgba(212, 168, 90, 0.25) !important;
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.45) !important;
+}
+.fi-simple-header .fi-logo img {
+  max-height: 4rem !important;
+  max-width: min(280px, 90vw) !important;
+}
+
+/* ── Dashboard welcome strip (if present) ── */
+.fi-main {
+  background: linear-gradient(180deg, #faf6ef 0%, #f3ebe0 100%) !important;
+}

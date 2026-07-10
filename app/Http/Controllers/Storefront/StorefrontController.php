@@ -251,7 +251,8 @@ class StorefrontController extends Controller
     private function buildHeroSlides(array $shop, Collection $homePromotions, Collection $featured): array
     {
         $slides = [[
-            'theme'     => 'saffron',
+            'theme'     => 'brand',
+            'is_brand'  => true,
             'eyebrow'   => $shop['tagline'],
             'title'     => $shop['hero_title'],
             'subtitle'  => $shop['hero_subtitle'],

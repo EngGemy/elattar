@@ -8,23 +8,26 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Katibeh&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap" rel="stylesheet">
-<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="icon" href="{{ asset('images/brand-logo.png') }}" type="image/png">
 <style>
 /* ═══ خطوط عطارة مصرية: ثلث (عناوين) + نسخ (نصوص) ═══ */
 :root{
-  --ink:#2a1810;
-  --ink-soft:#7a6254;
+  --ink:#1a1410;
+  --ink-soft:#6b5a48;
   --parchment:#faf6ef;
   --parchment-2:#f3ebe0;
-  --gold:#c8860a;
-  --gold-deep:#a66b08;
-  --gold-light:#f5c842;
-  --saffron:#ffb020;
+  --gold:#d4a85a;
+  --gold-deep:#b8892b;
+  --gold-light:#f0d9a8;
+  --gold-glow:rgba(212,168,90,.45);
+  --saffron:#e8b84a;
   --terracotta:#c45c2a;
-  --emerald:#1a7a4a;
+  --emerald:#3b533d;
+  --emerald-light:#4d6b50;
   --rose:#d4546a;
   --clay:#c45c2a;
-  --olive:#5a7a32;
+  --olive:#3b533d;
+  --night:#0d0a08;
   --card:#ffffff;
   --hair:rgba(42,24,16,.1);
   --shadow:0 22px 55px -22px rgba(42,24,16,.18);
@@ -75,7 +78,14 @@ header.top{
 }
 .top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:70px;height:auto;padding-block:10px;gap:10px}
 .brand{display:flex;align-items:center;gap:11px;font-family:var(--font-ui);font-weight:700;text-decoration:none;min-width:0;flex:1}
+.brand.has-logo{gap:0}
 .brand-seal,.brand-logo{width:44px;height:44px;border-radius:50%;flex-shrink:0}
+.brand-logo-wide{
+  height:clamp(42px,9vw,56px);width:auto;max-width:min(78vw,340px);
+  object-fit:contain;object-position:right center;flex-shrink:1;
+  filter:drop-shadow(0 6px 18px rgba(13,10,8,.22));
+}
+.brand-text{min-width:0}
 .brand-seal{
   background:linear-gradient(145deg,#fff8e8,#f5d88a);
   display:grid;place-items:center;
@@ -97,6 +107,7 @@ header.top{
   background:rgba(26,122,74,.1);color:var(--emerald);
   border:1px solid rgba(26,122,74,.22);
   padding:9px 16px;border-radius:40px;font-weight:600;font-size:.88rem;
+  font-family:var(--font-ui);
   text-decoration:none;transition:.25s;
 }
 .wa-top:hover{background:rgba(26,122,74,.18);border-color:var(--emerald)}
@@ -105,7 +116,8 @@ header.top{
   display:flex;align-items:center;gap:7px;cursor:pointer;
   background:linear-gradient(135deg,var(--gold),var(--saffron));
   color:#fff;border:none;padding:9px 18px;border-radius:40px;
-  font-weight:700;font-size:.88rem;text-decoration:none;
+  font-weight:700;font-size:.88rem;font-family:var(--font-ui);
+  text-decoration:none;
   transition:.25s;box-shadow:0 6px 20px -4px rgba(200,134,10,.45);
 }
 .cart-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px -4px rgba(200,134,10,.55)}
@@ -130,25 +142,26 @@ header.top{
 .card:hover .thumb img{transform:scale(1.08)}
 .card .thumb .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.8rem;opacity:.35}
 .badge-cat{position:absolute;top:10px;right:10px;background:rgba(42,24,16,.82);color:#fff;
-  font-family:'Reem Kufi';font-size:.7rem;padding:3px 10px;border-radius:20px}
-.badge-stock{position:absolute;top:10px;left:10px;font-family:'Reem Kufi';font-size:.68rem;padding:3px 9px;border-radius:20px;font-weight:600}
+  font-family:var(--font-ui);font-size:.7rem;padding:3px 10px;border-radius:20px}
+.badge-stock{position:absolute;top:10px;left:10px;font-family:var(--font-ui);font-size:.68rem;padding:3px 9px;border-radius:20px;font-weight:600}
 .badge-stock.ok{background:#d1fae5;color:#065f46}
 .badge-stock.low{background:#fef3c7;color:#92400e}
 .badge-stock.no{background:var(--clay);color:#fff}
 .badge-sale{position:absolute;bottom:10px;right:10px;background:linear-gradient(135deg,var(--terracotta),#e86830);color:#fff;
-  font-family:'Reem Kufi';font-size:.68rem;padding:4px 10px;border-radius:20px;font-weight:700}
+  font-family:var(--font-ui);font-size:.68rem;padding:4px 10px;border-radius:20px;font-weight:700}
 .card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
-.card h3{font-family:var(--font-thuluth);font-size:1.05rem;font-weight:400;line-height:1.4;color:var(--ink)}
-.card .desc{font-size:.82rem;color:var(--ink-soft);line-height:1.45}
-.card .price{font-family:'Reem Kufi';color:var(--gold-deep);font-weight:700;font-size:1.05rem;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card h3{font-family:var(--font-naskh);font-size:1.08rem;font-weight:600;line-height:1.55;color:var(--ink)}
+.card .desc{font-family:var(--font-naskh);font-size:.86rem;color:var(--ink-soft);line-height:1.65}
+.card .price{font-family:var(--font-naskh);color:var(--gold-deep);font-weight:700;font-size:1.05rem;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .card .price small{color:var(--ink-soft);font-weight:400;font-size:.76rem}
 .price-compare{color:var(--ink-soft);font-weight:500;font-size:.88rem;text-decoration:line-through;opacity:.7}
 .unit-row{display:flex;gap:6px;flex-wrap:wrap}
 .unit-opt{flex:1;min-width:58px;text-align:center;border:1px solid var(--hair);background:var(--parchment);
-  border-radius:9px;padding:6px 3px;cursor:pointer;font-weight:600;font-size:.78rem;color:var(--ink-soft);transition:.15s}
+  border-radius:9px;padding:6px 3px;cursor:pointer;font-weight:600;font-size:.78rem;color:var(--ink-soft);transition:.15s;
+  font-family:var(--font-naskh)}
 .unit-opt small{display:block;font-size:.65rem;color:var(--gold-deep);font-weight:400;margin-top:2px}
-.unit-opt.sel{background:var(--olive);color:#fff;border-color:var(--olive)}
-.unit-opt.sel small{color:#eef0dd}
+.unit-opt.sel{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+.unit-opt.sel small{color:#e8efe9}
 .unit-opt:disabled{opacity:.4;cursor:not-allowed}
 .qty-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .unit-chip{font-size:.8rem;font-weight:600;color:var(--ink-soft)}
@@ -156,7 +169,7 @@ header.top{
 .stepper button{width:28px;height:28px;border-radius:8px;border:1px solid var(--hair);background:var(--parchment);cursor:pointer;font-weight:700}
 .stepper span{min-width:24px;text-align:center;font-weight:700}
 .add-btn{background:linear-gradient(135deg,var(--ink),#4a3020);color:#fff;border:none;padding:10px;border-radius:12px;
-  cursor:pointer;font-weight:600;font-size:.9rem;width:100%;transition:.22s;margin-top:auto}
+  cursor:pointer;font-weight:600;font-size:.92rem;width:100%;transition:.22s;margin-top:auto;font-family:var(--font-naskh)}
 .add-btn .add-btn-inner{display:flex;align-items:center;justify-content:center;gap:6px}
 .add-btn:hover:not(:disabled){background:linear-gradient(135deg,var(--gold-deep),var(--gold))}
 .add-btn.added{background:var(--emerald)}
@@ -169,8 +182,8 @@ footer.site-footer{
   color:rgba(250,246,239,.75);padding:56px 0 28px;margin-top:0;
 }
 footer.site-footer .foot-inner{display:flex;flex-wrap:wrap;gap:36px;justify-content:space-between;margin-bottom:36px}
-footer.site-footer h4{font-family:'Reem Kufi';font-size:.9rem;color:var(--gold-light);margin-bottom:14px;letter-spacing:1px}
-footer.site-footer p,footer.site-footer a{font-size:.85rem;color:rgba(250,246,239,.55);line-height:1.9;display:block;transition:.2s}
+footer.site-footer h4{font-family:var(--font-ui);font-size:.9rem;color:var(--gold-light);margin-bottom:14px;letter-spacing:1px}
+footer.site-footer p,footer.site-footer a{font-family:var(--font-naskh);font-size:.88rem;color:rgba(250,246,239,.55);line-height:1.9;display:block;transition:.2s}
 footer.site-footer a:hover{color:var(--gold-light)}
 .foot-copy{
   border-top:1px solid rgba(245,200,66,.15);padding-top:22px;text-align:center;
@@ -181,7 +194,7 @@ footer.site-footer a:hover{color:var(--gold-light)}
 .btn-primary{
   background:linear-gradient(135deg,var(--gold),var(--saffron));
   color:#fff;border:none;padding:13px 30px;border-radius:12px;
-  font-weight:700;font-size:.96rem;cursor:pointer;transition:.25s;
+  font-family:var(--font-naskh);font-weight:700;font-size:.96rem;cursor:pointer;transition:.25s;
   display:inline-flex;align-items:center;gap:8px;
   box-shadow:0 8px 28px -6px rgba(200,134,10,.45);
 }
@@ -190,13 +203,14 @@ footer.site-footer a:hover{color:var(--gold-light)}
   background:#fff;color:var(--ink);
   border:2px solid var(--hair);
   padding:11px 26px;border-radius:12px;
-  font-weight:600;font-size:.92rem;cursor:pointer;transition:.25s;
+  font-family:var(--font-naskh);font-weight:600;font-size:.92rem;cursor:pointer;transition:.25s;
   display:inline-flex;align-items:center;gap:8px;
 }
 .btn-outline:hover{border-color:var(--gold);color:var(--gold-deep)}
 
 @media(max-width:600px){
   .top .wrap{min-height:60px;padding-block:8px}
+  .brand-logo-wide{height:38px;max-width:min(70vw,260px)}
   .brand b{font-size:.95rem}
   .brand-seal,.brand-logo{width:38px;height:38px}
   .wa-top{padding:7px 10px;font-size:.75rem}
@@ -210,16 +224,16 @@ footer.site-footer a:hover{color:var(--gold-light)}
 
 <header class="top">
   <div class="wrap">
-    <a href="{{ route('storefront.home') }}" class="brand">
+    <a href="{{ route('storefront.home') }}" class="brand @if($shop['logo_url']) has-logo @endif">
       @if($shop['logo_url'])
-        <img src="{{ $shop['logo_url'] }}" alt="{{ $shop['name'] }}" class="brand-logo">
+        <img src="{{ $shop['logo_url'] }}" alt="{{ $shop['name'] }}" class="brand-logo-wide">
       @else
         <div class="brand-seal">ع</div>
+        <div class="brand-text">
+          <b>{{ $shop['name'] }}</b>
+          <span>{{ $shop['tagline'] }}</span>
+        </div>
       @endif
-      <div>
-        <b>{{ $shop['name'] }}</b>
-        <span>{{ $shop['tagline'] }}</span>
-      </div>
     </a>
 
     <nav class="top-actions">

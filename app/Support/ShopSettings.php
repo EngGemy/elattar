@@ -23,7 +23,7 @@ final class ShopSettings
                 'tagline'          => $s->shop_tagline ?: $defaults['tagline'],
                 'description'      => $s->shop_description ?: $defaults['description'],
                 'logo_path'        => $s->logo_path,
-                'logo_url'         => self::urlForPath($s->logo_path),
+                'logo_url'         => self::logoUrl($s->logo_path),
                 'phone'            => $s->phone ?? '',
                 'whatsapp'         => self::digits($s->whatsapp ?: $defaults['whatsapp']),
                 'instapay'         => $s->instapay ?: $defaults['instapay'],
@@ -63,11 +63,11 @@ final class ShopSettings
             try {
                 $path = app(GeneralSettings::class)->logo_path;
             } catch (\Throwable) {
-                return null;
+                $path = null;
             }
         }
 
-        return self::urlForPath($path);
+        return self::urlForPath($path) ?? asset('images/brand-logo.png');
     }
 
     private static function urlForPath(?string $path): ?string
@@ -87,7 +87,7 @@ final class ShopSettings
             'tagline'         => 'عطارة وبقالة أصيلة',
             'description'     => 'أجود البهارات والمنتجات الغذائية — توصيل لكل الدقهلية',
             'logo_path'       => null,
-            'logo_url'        => null,
+            'logo_url'        => asset('images/brand-logo.png'),
             'phone'           => '',
             'whatsapp'        => self::digits(config('services.storefront.whatsapp', '201000000000')),
             'instapay'        => (string) config('services.storefront.payment.instapay', ''),

@@ -12,13 +12,17 @@
 @endphp
 
 <style>
-.dash{font-family:'Segoe UI',Tahoma,sans-serif;--ink:#241a11;--ink-soft:#5a4630;--parchment:#f8f4ec;
-    --parchment-2:#ede4d4;--gold:#b8892b;--gold-deep:#8a6115;--gold-light:#e8d5a8;
-    --green:#128c3e;--red:#c0392b;--blue:#1a5276;--hair:rgba(36,26,17,.1);--shadow:0 4px 20px rgba(36,26,17,.07);--r:14px}
+.dash{font-family:'Segoe UI',Tahoma,sans-serif;--ink:#1a1410;--ink-soft:#6b5a48;--parchment:#faf6ef;
+    --parchment-2:#f3ebe0;--gold:#d4a85a;--gold-deep:#b8892b;--gold-light:#f0d9a8;
+    --green:#3b533d;--red:#c0392b;--blue:#1a5276;--hair:rgba(26,20,16,.1);--shadow:0 4px 20px rgba(13,10,8,.08);--r:14px}
+.dash-toolbar-brand{display:flex;align-items:center;gap:16px;flex:1;min-width:0}
+.dash-logo{height:52px;width:auto;max-width:min(240px,42vw);object-fit:contain;flex-shrink:0;
+    filter:drop-shadow(0 4px 14px rgba(212,168,90,.45))}
 .dash *{box-sizing:border-box}
 .dash-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
-    background:linear-gradient(135deg,var(--ink),#3d2e1e);border-radius:var(--r);padding:18px 22px;
-    color:#fff;margin-bottom:16px;box-shadow:var(--shadow)}
+    background:linear-gradient(135deg,#0d0a08 0%,#1a1410 55%,#241a11 100%);border-radius:var(--r);padding:18px 22px;
+    color:#fff;margin-bottom:16px;box-shadow:0 12px 40px -8px rgba(13,10,8,.35);
+    border:1px solid rgba(212,168,90,.2)}
 .dash-toolbar h1{font-family:Georgia,serif;font-size:1.4rem;margin:0 0 4px}
 .dash-toolbar .sub{font-size:.75rem;opacity:.65}
 .dash-periods{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
@@ -99,9 +103,14 @@
 
     {{-- شريط علوي --}}
     <div class="dash-toolbar">
-        <div>
-            <h1>لوحة التحكم</h1>
-            <div class="sub">{{ $fromDate->format('d/m/Y') }} — {{ $toDate->format('d/m/Y') }} · نظرة شاملة على المتجر</div>
+        <div class="dash-toolbar-brand">
+            @if($logoUrl = \App\Support\ShopSettings::logoUrl())
+                <img src="{{ $logoUrl }}" alt="{{ \App\Support\ShopSettings::name() }}" class="dash-logo">
+            @endif
+            <div>
+                <h1>لوحة التحكم</h1>
+                <div class="sub">{{ $fromDate->format('d/m/Y') }} — {{ $toDate->format('d/m/Y') }} · نظرة شاملة على المتجر</div>
+            </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
             <a href="{{ $links['reports'] }}" class="dash-btn dash-btn-outline">📊 مركز التقارير</a>

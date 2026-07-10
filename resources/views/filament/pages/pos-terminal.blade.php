@@ -23,7 +23,8 @@
 
     .pos-top{background:linear-gradient(180deg,rgba(251,247,236,.98),rgba(241,233,216,.92));border-bottom:1px solid var(--hair);flex-shrink:0}
     .pos-top-inner{display:flex;align-items:center;gap:14px;padding:10px 16px;flex-wrap:wrap}
-    .pos-brand{display:flex;align-items:center;gap:10px;font-family:'Reem Kufi';font-weight:700;min-width:200px}
+    .pos-brand{display:flex;align-items:center;gap:10px;font-family:'Reem Kufi';font-weight:700;min-width:180px}
+    .pos-logo-wide{height:44px;width:auto;max-width:200px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(212,168,90,.35))}
     .pos-seal{width:42px;height:42px;border-radius:50%;background:var(--gold-deep);border:2px solid var(--gold);
         display:grid;place-items:center;color:var(--parchment);font-family:'Amiri';font-size:1.25rem;flex-shrink:0}
     .pos-brand b{font-size:1rem;display:block;line-height:1.2}
@@ -274,7 +275,11 @@
     <header class="pos-top">
         <div class="pos-top-inner">
             <div class="pos-brand">
-                <div class="pos-seal">ع</div>
+                @if($posLogo = \App\Support\ShopSettings::logoUrl())
+                    <img src="{{ $posLogo }}" alt="{{ $brandName }}" class="pos-logo-wide">
+                @else
+                    <div class="pos-seal">ع</div>
+                @endif
                 <div>
                     <b>{{ $brandName }}</b>
                     <small>{{ $session->register->name ?? 'كاشير' }} — شيفت #{{ $session->id }}</small>

@@ -32,14 +32,19 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName(fn () => ShopSettings::name())
             ->brandLogo(fn () => ShopSettings::logoUrl())
-            ->brandLogoHeight('2.2rem')
-
-            // ── تصميم ماكينزي: أبيض/أسود، بلا ألوان زاهية
+            ->brandLogoHeight('3.25rem')
+            ->favicon(asset('images/brand-logo.png'))
             ->colors([
-                'primary' => Color::Gray,
+                'primary' => Color::hex('#c8860a'),
+                'success' => Color::hex('#3b533d'),
+                'warning' => Color::hex('#d4a85a'),
                 'gray'    => Color::Slate,
             ])
             ->font('Cairo')
+            ->renderHook(
+                'panels::head.end',
+                fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-attar.css') . '?v=1">',
+            )
             ->maxContentWidth(MaxWidth::Full)
 
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

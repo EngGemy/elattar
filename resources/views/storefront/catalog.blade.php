@@ -9,12 +9,13 @@
   backdrop-filter:blur(8px);padding:16px 0 12px;border-bottom:1px solid var(--hair);margin-bottom:28px}
 .search-box{position:relative;max-width:460px;margin:0 auto 14px}
 .search-box input{width:100%;background:var(--card);border:1.5px solid var(--hair);border-radius:40px;
-  padding:12px 46px 12px 18px;font-size:1rem;color:var(--ink);outline:none;transition:.18s}
+  padding:12px 46px 12px 18px;font-size:1rem;color:var(--ink);outline:none;transition:.18s;font-family:var(--font-naskh)}
 .search-box input:focus{border-color:var(--gold)}
 .search-box svg{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--ink-soft);pointer-events:none}
 .filters{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;align-items:center}
 .chip{background:var(--parchment-2);border:1px solid var(--hair);color:var(--ink-soft);padding:7px 18px;
-  border-radius:30px;cursor:pointer;font-weight:600;font-size:.9rem;transition:.15s;white-space:nowrap;text-decoration:none}
+  border-radius:30px;cursor:pointer;font-weight:600;font-size:.9rem;transition:.15s;white-space:nowrap;text-decoration:none;
+  font-family:var(--font-naskh)}
 .chip:hover{border-color:var(--gold)}
 .chip.active{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
 .sort-sel{background:var(--card);border:1.5px solid var(--hair);border-radius:30px;padding:7px 14px;
@@ -31,20 +32,20 @@
 .card:hover .thumb img{transform:scale(1.07)}
 .card .thumb .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--hair);font-size:2.5rem}
 .badge-cat{position:absolute;top:10px;right:10px;background:rgba(36,26,17,.82);color:var(--parchment);
-  font-family:'Reem Kufi';font-size:.7rem;padding:3px 10px;border-radius:20px}
+  font-family:var(--font-ui);font-size:.7rem;padding:3px 10px;border-radius:20px}
 .badge-oos{position:absolute;top:10px;left:10px;background:var(--clay);color:#fff;
-  font-family:'Reem Kufi';font-size:.7rem;padding:3px 10px;border-radius:20px}
+  font-family:var(--font-ui);font-size:.7rem;padding:3px 10px;border-radius:20px}
 .card .body{padding:13px 15px 15px;display:flex;flex-direction:column;gap:8px;flex:1}
-.card h3{font-size:1.05rem;font-weight:700;line-height:1.3}
-.card .desc{font-size:.82rem;color:var(--ink-soft);line-height:1.4}
-.card .price{font-family:'Reem Kufi';color:var(--gold-deep);font-weight:700;font-size:1rem}
+.card h3{font-family:var(--font-naskh);font-size:1.08rem;font-weight:600;line-height:1.55}
+.card .desc{font-family:var(--font-naskh)}
+.card .price{font-family:var(--font-naskh);color:var(--gold-deep);font-weight:700;font-size:1rem}
 .card .price small{color:var(--ink-soft);font-weight:400;font-size:.76rem}
 .badge-stock{position:absolute;top:10px;left:10px;font-family:'Reem Kufi';font-size:.68rem;padding:3px 9px;border-radius:20px;font-weight:600}
 .badge-stock.ok{background:#d1fae5;color:#065f46}
 .badge-stock.low{background:#fef3c7;color:#92400e}
 .badge-stock.no{background:var(--clay);color:#fff}
 .badge-sale{position:absolute;bottom:10px;right:10px;background:var(--clay);color:#fff;
-  font-family:'Reem Kufi';font-size:.68rem;padding:4px 10px;border-radius:20px;font-weight:700}
+  font-family:var(--font-ui);font-size:.68rem;padding:4px 10px;border-radius:20px;font-weight:700}
 .card .price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .price-compare{color:var(--ink-soft);font-weight:500;font-size:.88rem;text-decoration:line-through;opacity:.75}
 .unit-row{display:flex;gap:6px;flex-wrap:wrap}
