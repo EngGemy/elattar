@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  quality:
+    name: Lint, test, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: bcmath, ctype, curl, dom, fileinfo, gd, intl, mbstring, pdo, pdo_sqlite, sqlite3, tokenizer, xml, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction
+
+      - name: Lint PHP files in app/
+        run: |
+          find app -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Run PHPUnit tests (SQLite in-memory)
+        run: php artisan test
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:4tG/NKV9qB660hOYgoebzcHRYAKwgUiE1XkJGXMIoQw=
+          APP_DEBUG: true
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+          MAIL_MAILER: array
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Verify frontend assets compile
+        run: |
+          npm ci
+          npm run build
