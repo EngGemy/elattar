@@ -40,17 +40,31 @@
             </div>
         </template>
 
-        {{-- أوزان للبهارات --}}
+        {{-- أوزان للبهارات — من 1 جم حتى الكيلو --}}
         <template x-if="variant?.is_weighted && variant?.available > 0">
-            <div class="unit-row">
-                <template x-for="(w, i) in weights" :key="w.g">
-                    <button type="button" class="unit-opt"
-                            :class="weightIdx === i ? 'sel' : ''"
-                            @click="weightIdx = i">
-                        <span x-text="w.label"></span>
-                        <small x-text="weightPrice(w.g)"></small>
-                    </button>
-                </template>
+            <div class="weight-block">
+                <div class="weight-input-row">
+                    <label class="weight-lbl">الكمية بالجرام</label>
+                    <div class="weight-field">
+                        <button type="button" class="weight-step-btn" @click="adjustWeight(-1)">−</button>
+                        <input type="number" class="weight-input" x-model.number="weightGrams"
+                               :min="variant.step || 1" :max="variant.available" :step="variant.step || 1"
+                               @change="snapWeight()">
+                        <span class="weight-unit">جم</span>
+                        <button type="button" class="weight-step-btn" @click="adjustWeight(1)">+</button>
+                    </div>
+                    <div class="weight-price-preview" x-text="weightPrice(weightGrams) + ' للكمية المختارة'"></div>
+                </div>
+                <div class="unit-row">
+                    <template x-for="w in weights" :key="w.g">
+                        <button type="button" class="unit-opt"
+                                :class="weightGrams === w.g ? 'sel' : ''"
+                                @click="weightGrams = w.g">
+                            <span x-text="w.label"></span>
+                            <small x-text="weightPrice(w.g)"></small>
+                        </button>
+                    </template>
+                </div>
             </div>
         </template>
 

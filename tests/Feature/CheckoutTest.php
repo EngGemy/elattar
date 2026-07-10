@@ -151,7 +151,7 @@ class CheckoutTest extends TestCase
             'price_minor' => 32000,
             'cost_minor'  => 850,
             'unit'        => UnitOfMeasure::Gram,
-            'step'        => 50,
+            'step'        => 1,
             'is_default'  => true,
             'is_active'   => true,
         ]);

@@ -158,8 +158,8 @@ class AttarSeeder extends Seeder
                     'price_minor' => (int) round($priceEgp * 100),
                     'cost_minor'  => (int) round($priceEgp * $costRatio * 100),
                     'unit'        => $isWeighted ? UnitOfMeasure::Gram : UnitOfMeasure::Piece,
-                    // البهارات والحبوب: مضاعفات ٥٠ جرام. القطع: واحدة.
-                    'step'        => $isWeighted ? '50.000' : '1.000',
+                    // البهارات والأعشاب: من جرام واحد (step=1)
+                    'step'        => $isWeighted ? '1.000' : '1.000',
                     'unit_label'  => $unitLabel,
                     'weight_grams' => $isWeighted ? null : 1000,
                     'is_default'  => true,

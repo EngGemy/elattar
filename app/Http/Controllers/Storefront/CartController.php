@@ -8,6 +8,7 @@ use App\Domain\Catalog\Models\ProductVariant;
 use App\Domain\Inventory\Models\Warehouse;
 use App\Domain\Pricing\Models\Coupon;
 use App\Domain\Shared\ValueObjects\Money;
+use App\Domain\Shared\ValueObjects\Quantity;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -51,7 +52,16 @@ class CartController extends Controller
             return $this->cartResponse($request, false, 'المنتج نفد من المخزون.');
         }
 
-        $qty  = (float) $data['qty'];
+        $qty  = $variant->normalizeOrderQty((float) $data['qty']);
+
+        if (! $variant->isValidQuantity(Quantity::of($qty, $variant->unit))) {
+            return $this->cartResponse(
+                $request,
+                false,
+                'الكمية يجب أن تكون من مضاعفات ' . $variant->minOrderQty() . ' ' . $variant->unit->labelAr() . '.'
+            );
+        }
+
         $cart = session('storefront_cart', []);
         $key  = (string) $variant->id;
 
@@ -110,10 +120,30 @@ class CartController extends Controller
             return back();
         }
 
+        $variant = ProductVariant::find($cart[$key]['variant_id']);
+
+        if (! $variant) {
+            unset($cart[$key]);
+            session(['storefront_cart' => $cart]);
+
+            return back();
+        }
+
         if ((float) $data['qty'] <= 0) {
             unset($cart[$key]);
         } else {
-            $cart[$key]['qty']              = (float) $data['qty'];
+            $qty = $variant->normalizeOrderQty((float) $data['qty']);
+
+            if (! $variant->isValidQuantity(Quantity::of($qty, $variant->unit))) {
+                return back()->with('error', 'الكمية غير صالحة — الحد الأدنى ' . $variant->minOrderQty() . ' ' . $variant->unit->labelAr());
+            }
+
+            $warehouseId = (int) (Warehouse::where('is_default', true)->value('id') ?? 1);
+            if ($qty > $variant->availableAt($warehouseId)) {
+                return back()->with('error', 'الكمية تتجاوز المتوفر في المخزون.');
+            }
+
+            $cart[$key]['qty']              = $qty;
             $cart[$key]['line_total_minor'] = $this->lineTotal($cart[$key]);
         }
 

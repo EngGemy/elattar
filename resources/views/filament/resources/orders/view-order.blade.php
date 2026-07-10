@@ -160,6 +160,20 @@
 .ov-notes-box textarea:focus{outline:none;border-color:var(--gold)}
 .ov-notes-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
 .ov-notes-foot .hint{font-size:.68rem;color:var(--ink-soft)}
+.ov-ops-panel{background:linear-gradient(135deg,#fff8e6,#fef9ef);border:2px solid var(--gold);
+    border-radius:var(--r);padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.ov-ops-title{font-size:.88rem;font-weight:800;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ov-ops-grid{display:flex;flex-wrap:wrap;gap:8px}
+.ov-btn-info{background:var(--blue);color:#fff}
+.ov-btn-warn{background:#e65100;color:#fff}
+.ov-btn-danger{background:var(--red);color:#fff}
+.ov-ship-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+@media(max-width:600px){.ov-ship-grid{grid-template-columns:1fr}}
+.ov-ship-grid input{width:100%;padding:9px 11px;border:1px solid var(--hair);border-radius:8px;font-size:.8rem}
+.ov-ship-grid input:focus{outline:none;border-color:var(--gold)}
+.ov-ship-grid label{display:block;font-size:.68rem;font-weight:700;color:var(--ink-soft);margin-bottom:4px}
+.ov-cancel-box{margin-top:12px;padding:12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:9px}
+.ov-cancel-box textarea{width:100%;min-height:60px;padding:8px;border:1px solid #f5c6c6;border-radius:8px;font-size:.8rem;margin:8px 0}
 </style>
 
 <div class="ov">
@@ -199,6 +213,63 @@
                 <div class="label">{{ $nextAction['label'] }}</div>
                 <div class="hint">{{ $nextAction['hint'] }}</div>
             </div>
+        </div>
+    @endif
+
+    @if(! $isCancelled && ! $isReturned)
+        <div class="ov-ops-panel">
+            <div class="ov-ops-title">⚡ عمليات الطلب</div>
+            <div class="ov-ops-grid">
+                @if($ops['canConfirm'])
+                    <button type="button" class="ov-btn ov-btn-info" wire:click="confirmOrder" wire:loading.attr="disabled"
+                            wire:confirm="تأكيد الطلب؟">
+                        ✅ تأكيد الطلب
+                    </button>
+                @endif
+                @if($ops['canProcess'])
+                    <button type="button" class="ov-btn ov-btn-warn" wire:click="startProcessing" wire:loading.attr="disabled">
+                        ⚙️ بدء التجهيز
+                    </button>
+                @endif
+                @if($ops['canFulfill'])
+                    <button type="button" class="ov-btn ov-btn-info" wire:click="fulfillOrder" wire:loading.attr="disabled"
+                            wire:confirm="سيتم خصم الكميات من المخزون. متابعة؟">
+                        🚚 صرف وشحن
+                    </button>
+                @endif
+                @if($ops['canDeliver'])
+                    <button type="button" class="ov-btn ov-btn-green" wire:click="deliverOrder" wire:loading.attr="disabled"
+                            wire:confirm="تأكيد تسليم الطلب للعميل؟">
+                        📦 تأكيد التسليم
+                    </button>
+                @endif
+                @if($canRecordPayment)
+                    <button type="button" class="ov-btn ov-btn-green" wire:click="confirmPayment" wire:loading.attr="disabled"
+                            wire:confirm="تسجيل تحصيل {{ $order->balanceDue()->format() }}؟">
+                        💰 {{ $paymentButtonLabel }}
+                    </button>
+                @endif
+                <a href="{{ $invoicePrintUrl }}" target="_blank" class="ov-btn ov-btn-gold">🖨️ طباعة الفاتورة</a>
+                @if($ops['canCancel'])
+                    <button type="button" class="ov-btn ov-btn-danger" wire:click="$toggle('showCancelForm')">
+                        ✕ إلغاء الطلب
+                    </button>
+                @endif
+            </div>
+            @if($showCancelForm && $ops['canCancel'])
+                <div class="ov-cancel-box">
+                    <strong style="font-size:.82rem;color:var(--red)">سبب الإلغاء (مطلوب)</strong>
+                    <textarea wire:model="cancelReason" placeholder="اكتب سبب الإلغاء…"></textarea>
+                    <div style="display:flex;gap:8px">
+                        <button type="button" class="ov-btn ov-btn-danger" wire:click="cancelOrder" wire:loading.attr="disabled">
+                            تأكيد الإلغاء
+                        </button>
+                        <button type="button" class="ov-btn ov-btn-outline" wire:click="$set('showCancelForm', false)">
+                            تراجع
+                        </button>
+                    </div>
+                </div>
+            @endif
         </div>
     @endif
 
@@ -303,6 +374,23 @@
                                 <div class="v" style="font-family:monospace">{{ $order->tracking_number ?? '—' }}</div>
                             </div>
                         @endif
+                        @if(! $isFinal)
+                            <div class="ov-ship-grid" style="grid-column:1/-1">
+                                <div>
+                                    <label>شركة الشحن</label>
+                                    <input type="text" wire:model="shippingCarrier" placeholder="مثال: أرامكس">
+                                </div>
+                                <div>
+                                    <label>رقم التتبّع</label>
+                                    <input type="text" wire:model="trackingNumber" placeholder="رقم الشحنة">
+                                </div>
+                            </div>
+                            <div style="grid-column:1/-1;margin-top:4px">
+                                <button type="button" class="ov-btn ov-btn-outline" wire:click="saveShipping" wire:loading.attr="disabled">
+                                    💾 حفظ بيانات الشحن
+                                </button>
+                            </div>
+                        @endif
                         @if(in_array($addr['payment_method'] ?? '', ['instapay', 'vodafone_cash'], true))
                             <div class="ov-info-item">
                                 <div class="k">رقم التحويل</div>
@@ -390,10 +478,10 @@
 
                     <div class="ov-actions">
                         <a href="{{ $invoiceUrl }}" target="_blank" class="ov-btn ov-btn-outline">📄 عرض الفاتورة</a>
-                        <a href="{{ $invoicePrintUrl }}" target="_blank" class="ov-btn ov-btn-gold">🖨️ طباعة الفاتورة</a>
-                        @if($canConfirmPayment)
-                            <button type="button" class="ov-btn ov-btn-green" wire:click="confirmPayment" wire:loading.attr="disabled">
-                                <span wire:loading.remove wire:target="confirmPayment">✅ تأكيد التحصيل</span>
+                        @if($canRecordPayment)
+                            <button type="button" class="ov-btn ov-btn-green" wire:click="confirmPayment" wire:loading.attr="disabled"
+                                    wire:confirm="تسجيل تحصيل {{ $order->balanceDue()->format() }}؟">
+                                <span wire:loading.remove wire:target="confirmPayment">✅ {{ $paymentButtonLabel }}</span>
                                 <span wire:loading wire:target="confirmPayment">جاري التسجيل…</span>
                             </button>
                         @endif

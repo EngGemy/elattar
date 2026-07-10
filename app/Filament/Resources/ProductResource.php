@@ -133,9 +133,9 @@ class ProductResource extends Resource
                                     ->live(onBlur: true),
 
                                 Forms\Components\TextInput::make('step')
-                                    ->label('أقل كمية بيع')
+                                    ->label('خطوة الكمية (أقل زيادة)')
                                     ->numeric()->step(0.001)->required()->default(1)
-                                    ->helperText('٥٠ للبهارات (بالجرام) — ١ للقطع'),
+                                    ->helperText('١ للبهارات بالجرام — ١ للقطع — يمكنك 25 أو 50 لو حابب'),
                             ]),
 
                             Forms\Components\Grid::make(3)->schema([

@@ -64,8 +64,7 @@ final readonly class Quantity implements \Stringable
     }
 
     /**
-     * التحقق من مضاعفات وحدة البيع.
-     * البهارات تُباع بمضاعفات 50 جرام — كمية 175g مرفوضة.
+     * التحقق من مضاعفات وحدة البيع (مثلاً step=1 ⟵ أي عدد صحيح من الجرام).
      */
     public function isMultipleOf(string $step): bool
     {

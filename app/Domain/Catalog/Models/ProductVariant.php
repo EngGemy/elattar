@@ -116,6 +116,26 @@ class ProductVariant extends Model implements AuditableContract
         return $qty->isMultipleOf((string) $this->step);
     }
 
+    /** أقل كمية طلب (بالوحدة المخزّنة: جم / قطعة / مل) */
+    public function minOrderQty(): float
+    {
+        $step = (float) $this->step;
+
+        return $step > 0 ? $step : 1.0;
+    }
+
+    /**
+     * تقريب كمية الطلب لمضاعفات step مع احترام الحد الأدنى.
+     * للبهارات: step=1 ⟵ أي جرام من 1 إلى المتاح.
+     */
+    public function normalizeOrderQty(float $qty): float
+    {
+        $step = $this->minOrderQty();
+        $rounded = round(max($step, round($qty / $step) * $step), 3);
+
+        return $rounded;
+    }
+
     // ── المخزون
     public function levelAt(int $warehouseId): ?StockLevel
     {

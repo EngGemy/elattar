@@ -157,6 +157,17 @@ header.top{
 .card .price small{color:var(--ink-soft);font-weight:400;font-size:.76rem}
 .price-compare{color:var(--ink-soft);font-weight:500;font-size:.88rem;text-decoration:line-through;opacity:.7}
 .unit-row{display:flex;gap:6px;flex-wrap:wrap}
+.weight-block{display:flex;flex-direction:column;gap:8px}
+.weight-input-row{display:flex;flex-direction:column;gap:6px}
+.weight-lbl{font-size:.78rem;font-weight:600;color:var(--ink-soft)}
+.weight-field{display:flex;align-items:center;gap:6px}
+.weight-input{flex:1;min-width:0;text-align:center;padding:8px 10px;border:1.5px solid var(--hair);
+  border-radius:9px;font-size:1rem;font-weight:700;background:var(--parchment-2);color:var(--ink)}
+.weight-input:focus{outline:none;border-color:var(--gold);background:var(--card)}
+.weight-unit{font-size:.82rem;font-weight:600;color:var(--ink-soft);flex-shrink:0}
+.weight-step-btn{width:32px;height:32px;border:1px solid var(--hair);border-radius:8px;
+  background:var(--parchment);cursor:pointer;font-weight:700;font-size:1rem}
+.weight-price-preview{font-size:.76rem;color:var(--gold-deep);font-weight:600}
 .unit-opt{flex:1;min-width:58px;text-align:center;border:1px solid var(--hair);background:var(--parchment);
   border-radius:9px;padding:6px 3px;cursor:pointer;font-weight:600;font-size:.78rem;color:var(--ink-soft);transition:.15s;
   font-family:var(--font-naskh)}
@@ -320,11 +331,14 @@ function productCard(product) {
     return {
         product,
         selectedVariantId: product.default_variant_id || product.variants[0]?.id,
-        weightIdx: 0,
+        weightGrams: 100,
         pieceQty: 1,
         loading: false,
         justAdded: false,
         weights: [
+            { g: 1, label: '١ جم' },
+            { g: 25, label: '٢٥ جم' },
+            { g: 50, label: '٥٠ جم' },
             { g: 100, label: '١٠٠ جم' },
             { g: 250, label: '٢٥٠ جم' },
             { g: 500, label: 'نص كيلو' },
@@ -341,13 +355,43 @@ function productCard(product) {
 
         init() {
             const v = this.variant;
-            if (v) this.pieceQty = v.step || 1;
+            if (v) {
+                this.pieceQty = v.step || 1;
+                this.weightGrams = Math.min(Math.max(v.step || 1, 100), v.available || 100);
+            }
         },
 
         selectVariant(id) {
             this.selectedVariantId = id;
             const v = this.variant;
-            if (v) this.pieceQty = v.step || 1;
+            if (v) {
+                this.pieceQty = v.step || 1;
+                this.weightGrams = Math.min(Math.max(v.step || 1, 100), v.available || 100);
+            }
+        },
+
+        normalizeWeight(qty) {
+            const v = this.variant;
+            if (!v) return qty;
+            const step = v.step || 1;
+            return Math.max(step, Math.round(qty / step) * step);
+        },
+
+        snapWeight() {
+            const v = this.variant;
+            if (!v) return;
+            let g = this.normalizeWeight(this.weightGrams || v.step || 1);
+            if (g > v.available) g = this.normalizeWeight(v.available);
+            this.weightGrams = g;
+        },
+
+        adjustWeight(delta) {
+            const v = this.variant;
+            if (!v) return;
+            const step = v.step || 1;
+            let g = this.normalizeWeight((this.weightGrams || step) + delta * step);
+            if (g > v.available) g = this.normalizeWeight(v.available);
+            this.weightGrams = Math.max(step, g);
         },
 
         priceLabel() {
@@ -390,7 +434,7 @@ function productCard(product) {
         orderQty() {
             const v = this.variant;
             if (!v) return 0;
-            if (v.is_weighted) return this.weights[this.weightIdx]?.g ?? v.step;
+            if (v.is_weighted) return this.normalizeWeight(this.weightGrams || v.step || 1);
             return this.pieceQty;
         },
 

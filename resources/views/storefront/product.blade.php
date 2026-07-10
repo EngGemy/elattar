@@ -166,9 +166,9 @@
       <div class="qty-section">
         <h4 x-text="currentVariant?.is_weighted ? 'اختر الكمية بالجرام' : 'الكمية'"></h4>
 
-        {{-- Quick weights (for weighted products) --}}
+        {{-- Quick weights (for weighted products) — من 1 جم --}}
         <div class="quick-weights" x-show="currentVariant?.is_weighted">
-          <template x-for="g in [100, 250, 500, 1000]" :key="g">
+          <template x-for="g in [1, 25, 50, 100, 250, 500, 1000]" :key="g">
             <button @click="qty = g"
                     :class="qty === g ? 'active' : ''"
                     class="qw-btn"
@@ -180,7 +180,9 @@
         <div class="qty-field">
           <button @click="decrement()" class="qty-btn">−</button>
           <input type="number" class="qty-input" x-model.number="qty"
-                 :step="currentVariant?.step ?? 1" min="0"
+                 :step="currentVariant?.step ?? 1"
+                 :min="currentVariant?.step ?? 1"
+                 :max="currentVariant?.available ?? 999999"
                  @change="snapQty()">
           <span class="qty-unit" x-text="currentVariant?.is_weighted ? 'جم' : (currentVariant?.unit_label ?? '')"></span>
           <button @click="increment()" class="qty-btn">+</button>
@@ -251,8 +253,12 @@ function productPage(variants, defaultVariant) {
         },
 
         snapQty() {
-            const step = this.currentVariant?.step ?? 1;
-            this.qty = Math.max(step, Math.round(this.qty / step) * step);
+            const v = this.currentVariant;
+            if (!v) return;
+            const step = v.step ?? 1;
+            let q = Math.max(step, Math.round(this.qty / step) * step);
+            if (v.available && q > v.available) q = Math.floor(v.available / step) * step || step;
+            this.qty = q;
         },
 
         fmt(minor) {

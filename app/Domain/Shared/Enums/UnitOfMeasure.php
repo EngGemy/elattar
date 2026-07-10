@@ -42,10 +42,10 @@ enum UnitOfMeasure: string implements HasLabel
     {
         return match ($this) {
             self::Piece => '1.000',
-            self::Gram  => '50.000',   // البهارات: مضاعفات ٥٠ جرام
+            self::Gram  => '1.000',    // عطارة: من جرام واحد
             self::Kg    => '0.250',
             self::Liter => '0.500',
-            self::Ml    => '100.000',
+            self::Ml    => '1.000',    // سوائل: من مل واحد
         };
     }
 }

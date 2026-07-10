@@ -8,6 +8,7 @@ use App\Domain\Sales\Actions\CancelOrderAction;
 use App\Domain\Sales\Actions\FulfillOrderAction;
 use App\Domain\Sales\Actions\RecordPaymentAction;
 use App\Domain\Sales\Models\Order;
+use App\Domain\Sales\Models\OrderStatusHistory;
 use App\Domain\Sales\States\Confirmed;
 use App\Domain\Sales\States\Delivered;
 use App\Domain\Sales\States\Processing;
@@ -19,6 +20,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Throwable;
 
 class ViewOrder extends ViewRecord
 {
@@ -28,10 +30,24 @@ class ViewOrder extends ViewRecord
 
     public ?string $internalNotes = null;
 
+    public ?string $shippingCarrier = null;
+
+    public ?string $trackingNumber = null;
+
+    public string $cancelReason = '';
+
+    public bool $showCancelForm = false;
+
     public function mount(int | string $record): void
     {
         parent::mount($record);
-        $this->internalNotes = $this->getRecord()->internal_notes ?? '';
+
+        /** @var Order $order */
+        $order = $this->getRecord();
+
+        $this->internalNotes   = $order->internal_notes ?? '';
+        $this->shippingCarrier = $order->shipping_carrier ?? '';
+        $this->trackingNumber  = $order->tracking_number ?? '';
     }
 
     public function saveInternalNotes(): void
@@ -42,32 +58,126 @@ class ViewOrder extends ViewRecord
             'internal_notes' => trim($this->internalNotes ?? '') ?: null,
         ]);
 
-        Notification::make()
-            ->title('تم حفظ الملاحظات')
-            ->success()
-            ->send();
+        Notification::make()->title('تم حفظ الملاحظات')->success()->send();
+    }
+
+    public function saveShipping(): void
+    {
+        abort_unless(static::getResource()::canView($this->getRecord()), 403);
+
+        $this->getRecord()->update([
+            'shipping_carrier' => trim($this->shippingCarrier ?? '') ?: null,
+            'tracking_number'  => trim($this->trackingNumber ?? '') ?: null,
+        ]);
+
+        $this->record->refresh();
+
+        Notification::make()->title('تم حفظ بيانات الشحن')->success()->send();
+    }
+
+    public function confirmOrder(): void
+    {
+        $this->runStatusAction(function (Order $order) {
+            if (! $order->status->canTransitionTo(Confirmed::class)) {
+                return;
+            }
+
+            $this->logTransition($order, Confirmed::class, 'تم تأكيد الطلب');
+            Notification::make()->title('تم تأكيد الطلب')->success()->send();
+        });
+    }
+
+    public function startProcessing(): void
+    {
+        $this->runStatusAction(function (Order $order) {
+            if (! $order->status->canTransitionTo(Processing::class)) {
+                return;
+            }
+
+            $this->logTransition($order, Processing::class, 'بدء تجهيز الطلب');
+            Notification::make()->title('بدء التجهيز')->success()->send();
+        });
+    }
+
+    public function fulfillOrder(): void
+    {
+        $this->runStatusAction(function (Order $order) {
+            if ($order->status::$name !== 'processing') {
+                return;
+            }
+
+            app(FulfillOrderAction::class)->execute($order);
+            $this->record->refresh();
+            Notification::make()->title('تم صرف الطلب وخصم المخزون')->success()->send();
+        });
+    }
+
+    public function deliverOrder(): void
+    {
+        $this->runStatusAction(function (Order $order) {
+            if (! $order->status->canTransitionTo(Delivered::class)) {
+                return;
+            }
+
+            $this->logTransition($order, Delivered::class, 'تم تسليم الطلب للعميل');
+            $order->update(['delivered_at' => now()]);
+
+            $fresh = $order->fresh();
+
+            if (($fresh->shipping_address['payment_method'] ?? 'cod') === 'cod' && ! $fresh->isPaid()) {
+                app(RecordPaymentAction::class)->execute(
+                    $fresh,
+                    PaymentMethod::Cod,
+                    $fresh->balanceDue()
+                );
+            }
+
+            $this->record->refresh();
+            Notification::make()->title('تم تأكيد التسليم')->success()->send();
+        });
     }
 
     public function confirmPayment(): void
     {
-        /** @var Order $order */
-        $order = $this->getRecord();
+        $this->runStatusAction(function (Order $order) {
+            if ($order->isPaid()) {
+                Notification::make()->title('الطلب مسدَّد بالفعل')->warning()->send();
 
-        if ($order->isPaid()) {
+                return;
+            }
+
+            $method = $this->resolvePaymentMethod($order);
+
+            app(RecordPaymentAction::class)->execute($order, $method, $order->balanceDue());
+
+            $this->record->refresh();
+            Notification::make()->title('تم تسجيل التحصيل')->success()->send();
+        });
+    }
+
+    public function cancelOrder(): void
+    {
+        $reason = trim($this->cancelReason);
+
+        if ($reason === '') {
+            Notification::make()->title('سبب الإلغاء مطلوب')->danger()->send();
+
             return;
         }
 
-        $method = match ($order->shipping_address['payment_method'] ?? '') {
-            'instapay'      => PaymentMethod::Transfer,
-            'vodafone_cash' => PaymentMethod::Wallet,
-            default         => PaymentMethod::Cod,
-        };
+        $this->runStatusAction(function (Order $order) use ($reason) {
+            if ($order->status->isFinal()) {
+                return;
+            }
 
-        app(RecordPaymentAction::class)->execute($order, $method, $order->balanceDue());
+            app(CancelOrderAction::class)->execute($order, $reason);
 
-        $this->record->refresh();
+            $this->cancelReason   = '';
+            $this->showCancelForm = false;
+            $this->record->refresh();
 
-        Notification::make()->title('تم تسجيل التحصيل')->success()->send();
+            Notification::make()->title('تم إلغاء الطلب')->success()->send();
+        });
     }
 
     public function getTitle(): string
@@ -96,14 +206,14 @@ class ViewOrder extends ViewRecord
                 ->color('info')
                 ->visible(fn (Order $record) => $record->status->canTransitionTo(Confirmed::class))
                 ->requiresConfirmation()
-                ->action(fn (Order $record) => $record->status->transitionTo(Confirmed::class)),
+                ->action(fn () => $this->confirmOrder()),
 
             Actions\Action::make('process')
                 ->label('بدء التجهيز')
                 ->icon('heroicon-o-cog-6-tooth')
                 ->color('warning')
                 ->visible(fn (Order $record) => $record->status->canTransitionTo(Processing::class))
-                ->action(fn (Order $record) => $record->status->transitionTo(Processing::class)),
+                ->action(fn () => $this->startProcessing()),
 
             Actions\Action::make('fulfill')
                 ->label('صرف وشحن')
@@ -112,52 +222,26 @@ class ViewOrder extends ViewRecord
                 ->visible(fn (Order $record) => $record->status::$name === 'processing')
                 ->requiresConfirmation()
                 ->modalDescription('سيتم خصم الكميات من المخزون.')
-                ->action(function (Order $record) {
-                    try {
-                        app(FulfillOrderAction::class)->execute($record);
-                        Notification::make()->title('تم صرف الطلب')->success()->send();
-                    } catch (\Throwable $e) {
-                        Notification::make()->title('فشل الصرف')->body($e->getMessage())->danger()->send();
-                    }
-                }),
+                ->action(fn () => $this->fulfillOrder()),
 
             Actions\Action::make('deliver')
                 ->label('تأكيد التسليم')
                 ->icon('heroicon-o-check-badge')
                 ->color('success')
                 ->visible(fn (Order $record) => $record->status->canTransitionTo(Delivered::class))
-                ->action(function (Order $record) {
-                    $record->status->transitionTo(Delivered::class);
-                    $record->update(['delivered_at' => now()]);
-
-                    if (($record->shipping_address['payment_method'] ?? 'cod') === 'cod' && ! $record->isPaid()) {
-                        app(RecordPaymentAction::class)->execute(
-                            $record,
-                            PaymentMethod::Cod,
-                            $record->balanceDue()
-                        );
-                    }
-
-                    Notification::make()->title('تم تأكيد التسليم')->success()->send();
-                }),
+                ->requiresConfirmation()
+                ->action(fn () => $this->deliverOrder()),
 
             Actions\Action::make('confirm_payment')
                 ->label('تأكيد الدفع')
                 ->icon('heroicon-o-banknotes')
                 ->color('success')
-                ->visible(fn (Order $record) => ! $record->isPaid()
-                    && in_array($record->shipping_address['payment_method'] ?? '', ['instapay', 'vodafone_cash'], true))
+                ->visible(fn (Order $record) => ! $record->isPaid())
                 ->requiresConfirmation()
-                ->action(function (Order $record) {
-                    $method = match ($record->shipping_address['payment_method'] ?? '') {
-                        'instapay'      => PaymentMethod::Transfer,
-                        'vodafone_cash' => PaymentMethod::Wallet,
-                        default         => PaymentMethod::Cod,
-                    };
-
-                    app(RecordPaymentAction::class)->execute($record, $method, $record->balanceDue());
-                    Notification::make()->title('تم تسجيل الدفع')->success()->send();
-                }),
+                ->modalHeading('تأكيد استلام المبلغ')
+                ->modalDescription(fn (Order $record) => 'تسجيل دفع ' . $record->balanceDue()->format()
+                    . ' — ' . $record->paymentMethodLabel())
+                ->action(fn () => $this->confirmPayment()),
 
             Actions\Action::make('cancel')
                 ->label('إلغاء')
@@ -165,13 +249,9 @@ class ViewOrder extends ViewRecord
                 ->color('danger')
                 ->visible(fn (Order $record) => ! $record->status->isFinal())
                 ->form([Forms\Components\Textarea::make('reason')->label('سبب الإلغاء')->required()])
-                ->action(function (Order $record, array $data) {
-                    try {
-                        app(CancelOrderAction::class)->execute($record, $data['reason']);
-                        Notification::make()->title('تم الإلغاء')->success()->send();
-                    } catch (\Throwable $e) {
-                        Notification::make()->title('فشل الإلغاء')->body($e->getMessage())->danger()->send();
-                    }
+                ->action(function (array $data) {
+                    $this->cancelReason = $data['reason'];
+                    $this->cancelOrder();
                 }),
         ];
     }
@@ -206,6 +286,7 @@ class ViewOrder extends ViewRecord
         $paidPct    = $totalMinor > 0 ? min(100, round($paidMinor / $totalMinor * 100)) : 0;
 
         $paymentStatus = $order->payment_status->value;
+        $payMethod     = (string) ($addr['payment_method'] ?? 'cod');
 
         return [
             'steps'            => $steps,
@@ -220,8 +301,15 @@ class ViewOrder extends ViewRecord
             'nextAction'       => $this->resolveNextActionHint($order, $statusName),
             'invoiceUrl'       => route('orders.invoice', $order),
             'invoicePrintUrl'  => route('orders.invoice', $order) . '?autoprint=1',
-            'canConfirmPayment'=> ! $order->isPaid()
-                && in_array($addr['payment_method'] ?? '', ['instapay', 'vodafone_cash'], true),
+            'canRecordPayment' => ! $order->isPaid(),
+            'paymentButtonLabel' => $this->paymentButtonLabel($payMethod),
+            'ops'              => [
+                'canConfirm' => $order->status->canTransitionTo(Confirmed::class),
+                'canProcess' => $order->status->canTransitionTo(Processing::class),
+                'canFulfill' => $statusName === 'processing',
+                'canDeliver' => $order->status->canTransitionTo(Delivered::class),
+                'canCancel'  => ! $order->status->isFinal(),
+            ],
             'collection'       => $this->buildCollectionStatus($order, $paymentStatus),
         ];
     }
@@ -264,21 +352,75 @@ class ViewOrder extends ViewRecord
             return null;
         }
 
-        if (! $order->isPaid()
-            && in_array($order->shipping_address['payment_method'] ?? '', ['instapay', 'vodafone_cash'], true)) {
+        if (! $order->isPaid()) {
             return [
                 'icon'  => '💳',
-                'label' => 'تأكيد استلام التحويل',
-                'hint'  => 'العميل اختار الدفع الإلكتروني — راجع التحويل ثم اضغط «تأكيد الدفع» أعلاه.',
+                'label' => $this->paymentButtonLabel((string) ($order->shipping_address['payment_method'] ?? 'cod')),
+                'hint'  => 'سجّل استلام ' . $order->balanceDue()->format() . ' من قسم «التحصيل والدفع» أو الأزرار أدناه.',
             ];
         }
 
         return match ($statusName) {
-            'pending'    => ['icon' => '✅', 'label' => 'الخطوة التالية: تأكيد الطلب', 'hint' => 'راجع الأصناف والمبلغ ثم أكّد الطلب من الأزرار أعلاه.'],
+            'pending'    => ['icon' => '✅', 'label' => 'الخطوة التالية: تأكيد الطلب', 'hint' => 'راجع الأصناف والمبلغ ثم أكّد الطلب.'],
             'confirmed'  => ['icon' => '⚙️', 'label' => 'الخطوة التالية: بدء التجهيز', 'hint' => 'ابدأ تجهيز الأصناف من المخزن.'],
             'processing' => ['icon' => '🚚', 'label' => 'الخطوة التالية: صرف وشحن', 'hint' => 'سيتم خصم الكميات من المخزون عند التنفيذ.'],
-            'shipped'    => ['icon' => '📦', 'label' => 'الخطوة التالية: تأكيد التسليم', 'hint' => 'بعد وصول الطلب للعميل، أكّد التسليم لتسجيل الدفع (COD).'],
+            'shipped'    => ['icon' => '📦', 'label' => 'الخطوة التالية: تأكيد التسليم', 'hint' => 'بعد وصول الطلب للعميل، أكّد التسليم.'],
             default      => null,
         };
+    }
+
+    private function paymentButtonLabel(string $payMethod): string
+    {
+        return match ($payMethod) {
+            'instapay'      => 'تأكيد استلام التحويل (إنستاباي)',
+            'vodafone_cash' => 'تأكيد استلام المحفظة',
+            'cod'           => 'تأكيد استلام الكاش',
+            default         => 'تأكيد استلام المبلغ',
+        };
+    }
+
+    private function resolvePaymentMethod(Order $order): PaymentMethod
+    {
+        return match ($order->shipping_address['payment_method'] ?? 'cod') {
+            'instapay'      => PaymentMethod::Transfer,
+            'vodafone_cash' => PaymentMethod::Wallet,
+            default         => PaymentMethod::Cod,
+        };
+    }
+
+    /** @param class-string<\App\Domain\Sales\States\OrderState> $toState */
+    private function logTransition(Order $order, string $toState, string $note): void
+    {
+        $from = $order->status::$name;
+        $order->status->transitionTo($toState);
+
+        OrderStatusHistory::create([
+            'order_id'    => $order->id,
+            'from_status' => $from,
+            'to_status'   => $toState::$name,
+            'note'        => $note,
+            'user_id'     => auth()->id(),
+        ]);
+
+        $this->record->refresh();
+    }
+
+    /** @param callable(Order): void $callback */
+    private function runStatusAction(callable $callback): void
+    {
+        abort_unless(static::getResource()::canView($this->getRecord()), 403);
+
+        try {
+            /** @var Order $order */
+            $order = $this->getRecord()->fresh(['lines', 'customer']);
+            $callback($order);
+            $this->record->refresh();
+        } catch (Throwable $e) {
+            Notification::make()
+                ->title('تعذّر تنفيذ العملية')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 }

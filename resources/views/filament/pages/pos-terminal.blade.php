@@ -531,10 +531,15 @@
                 <button class="x" @click="weightModal=false">×</button>
             </div>
             <div class="mb">
-                <input type="number" x-ref="weightInput" x-model.number="pendingQty" :step="pendingVariant?.step"
-                       @keydown.enter="confirmWeight()" style="width:100%;text-align:center;font-size:2rem;font-weight:700;padding:12px;border:1.5px solid var(--hair);border-radius:12px;margin-bottom:10px">
+                <input type="number" x-ref="weightInput" x-model.number="pendingQty"
+                       :step="pendingVariant?.step || 1"
+                       :min="pendingVariant?.step || 1"
+                       :max="pendingVariant?.available"
+                       @keydown.enter="confirmWeight()"
+                       style="width:100%;text-align:center;font-size:2rem;font-weight:700;padding:12px;border:1.5px solid var(--hair);border-radius:12px;margin-bottom:10px">
+                <p style="font-size:.75rem;color:var(--ink-soft);margin:-4px 0 10px;text-align:center">من 1 جم — السعر يُحسب تلقائيًا ويُخصم من المخزون</p>
                 <div class="unit-row">
-                    <template x-for="g in [100,250,500,1000]" :key="g">
+                    <template x-for="g in [1,25,50,100,250,500,1000]" :key="g">
                         <button type="button" class="unit-opt" :class="pendingQty===g?'sel':''" @click="pendingQty=g"
                                 x-text="g>=1000?(g/1000)+' كجم':g+' جم'"></button>
                     </template>
@@ -761,8 +766,12 @@ function posExpert(catalog, categories, sessionMeta, pendingOnline, pendingOrder
 
         confirmWeight() {
             const v = this.pendingVariant;
-            const qty = Math.max(v.step, Math.round(this.pendingQty / v.step) * v.step);
-            if (qty > v.available) { alert('الكمية المتاحة: ' + this.fmtQty(v.available, v.unit)); return; }
+            const step = v.step || 1;
+            let qty = Math.max(step, Math.round(this.pendingQty / step) * step);
+            if (qty > v.available) {
+                alert('الكمية المتاحة: ' + this.fmtQty(v.available, v.unit));
+                return;
+            }
             this.pushCart({ product_id: v.product_id, image: v.image, thumb: v.thumb, name: v.full_name?.split(' — ')[0] || v.label }, v, qty);
             this.weightModal = false;
             this.query = '';

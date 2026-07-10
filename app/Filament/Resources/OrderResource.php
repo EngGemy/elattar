@@ -198,14 +198,13 @@ class OrderResource extends Resource
 
                 Tables\Actions\Action::make('confirm_payment')
                     ->label('تأكيد الدفع')->icon('heroicon-o-banknotes')->color('success')
-                    ->visible(fn (Order $r) => ! $r->isPaid()
-                        && in_array($r->shipping_address['payment_method'] ?? '', ['instapay', 'vodafone_cash'], true))
+                    ->visible(fn (Order $r) => ! $r->isPaid())
                     ->requiresConfirmation()
-                    ->modalHeading('تأكيد استلام التحويل')
+                    ->modalHeading('تأكيد استلام المبلغ')
                     ->modalDescription(fn (Order $r) => 'تسجيل دفع ' . $r->balanceDue()->format()
-                        . ' — ' . StorefrontCheckout::paymentLabel((string) $r->shipping_address['payment_method']))
+                        . ' — ' . $r->paymentMethodLabel())
                     ->action(function (Order $r) {
-                        $method = match ($r->shipping_address['payment_method'] ?? '') {
+                        $method = match ($r->shipping_address['payment_method'] ?? 'cod') {
                             'instapay'      => PaymentMethod::Transfer,
                             'vodafone_cash' => PaymentMethod::Wallet,
                             default         => PaymentMethod::Cod,
