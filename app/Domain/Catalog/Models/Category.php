@@ -36,12 +36,16 @@ class Category extends Model implements AuditableContract
         return $this->hasMany(Product::class);
     }
 
+    /** معرّفات هذا التصنيف وجميع أبنائه (للفلترة في الكتالوج) */
+    public function descendantIdsIncludingSelf(): \Illuminate\Support\Collection
+    {
+        return static::descendantsAndSelf($this->getKey())->pluck('id');
+    }
+
     /** كل المنتجات في التصنيف وأحفاده — استعلام واحد */
     public function allProducts()
     {
-        $ids = static::descendantsAndSelf($this->getKey())->pluck('id');
-
-        return Product::whereIn('category_id', $ids);
+        return Product::whereIn('category_id', $this->descendantIdsIncludingSelf());
     }
 
     public function scopeActive($q)   { return $q->where('is_active', true); }

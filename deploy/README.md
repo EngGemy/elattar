@@ -78,6 +78,7 @@ If SSH is enabled on the host, add these so the workflow runs `php artisan` afte
 | `SSH_USERNAME` | cPanel SSH username |
 | `SSH_PRIVATE_KEY` | Private key (PEM), no passphrase recommended for CI |
 | `SSH_PORT` | Optional, default `22` |
+| `DEPLOY_PATH` | App root on server, e.g. `/home/user/elattar` |
 
 ---
 
@@ -142,7 +143,9 @@ If uploads or logs fail, ensure `storage` and `bootstrap/cache` are writable by 
 Run once after `.env` exists:
 
 ```bash
+export PATH="$HOME/bin:$PATH"
 cd ~/elattar
+
 php artisan migrate --force
 php artisan storage:link
 php artisan config:cache
@@ -150,7 +153,58 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-Optional seed (only on empty database):
+### 5.1 إنشاء مدير النظام (مرة واحدة)
+
+من **cPanel Terminal** أو SSH:
+
+```bash
+export PATH="$HOME/bin:$PATH"
+cd ~/elattar
+
+bash deploy/server-bootstrap.sh
+```
+
+أو يدويًا:
+
+```bash
+export PATH="$HOME/bin:$PATH"
+cd ~/elattar
+
+# مستخدم admin (تفاعلي)
+php artisan make:filament-user
+
+# صلاحيات Filament Shield — المستخدم رقم 1
+php artisan shield:super-admin --user=1
+
+# نظّف اللوق + صلاحيات الكتابة
+: > storage/logs/laravel.log
+chmod -R 775 storage bootstrap/cache
+```
+
+> **ملاحظة:** إذا كان المستخدم الجديد ليس `id=1`، استبدل `--user=1` برقم الـ ID الصحيح من جدول `users`.
+
+بدون تفاعل (اختياري):
+
+```bash
+php artisan make:filament-user \
+  --name="مدير النظام" \
+  --email="you@example.com" \
+  --password="YourSecurePassword" \
+  --no-interaction
+
+php artisan shield:super-admin --user=1 --no-interaction
+```
+
+### 5.2 النشر الروتيني (بعد كل push على main)
+
+```bash
+cd ~/elattar
+bash deploy/deploy.sh
+```
+
+أو يُشغَّل تلقائيًا من GitHub Actions عند ضبط `SSH_HOST` و`DEPLOY_PATH`.
+
+Optional seed (only on empty database — **بيانات تجريبية**):
 
 ```bash
 php artisan db:seed --force

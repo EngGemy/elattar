@@ -66,8 +66,7 @@ class StorefrontController extends Controller
         if ($request->filled('category')) {
             $cat = Category::where('slug', $request->category)->first();
             if ($cat) {
-                $ids = Category::descendantsAndSelf($cat->getKey())->pluck('id');
-                $query->whereIn('category_id', $ids);
+                $query->whereIn('category_id', $cat->descendantIdsIncludingSelf());
             }
         }
 
