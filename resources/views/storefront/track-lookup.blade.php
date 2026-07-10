@@ -5,7 +5,7 @@
 @push('head-styles')
 <style>
 .track-hero{text-align:center;padding:40px 0 24px}
-.track-hero h1{font-family:'Amiri';font-size:clamp(1.9rem,4vw,2.6rem);margin-bottom:8px}
+.track-hero h1{font-family:var(--font-thuluth);font-size:clamp(1.75rem,4vw,2.4rem);margin-bottom:8px;font-weight:400}
 .track-hero p{color:var(--ink-soft);font-size:.95rem;max-width:420px;margin:0 auto;line-height:1.6}
 
 .track-card{max-width:440px;margin:0 auto 60px;background:var(--card);border:1px solid var(--hair);

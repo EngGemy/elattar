@@ -4,7 +4,7 @@
 
 @push('head-styles')
 <style>
-.page-title{font-family:'Amiri';font-size:2rem;font-weight:700;padding:28px 0 20px}
+.page-title{font-family:var(--font-thuluth);font-size:2rem;font-weight:400;padding:28px 0 20px}
 .cart-layout{display:grid;grid-template-columns:1fr 360px;gap:28px;padding-bottom:60px;align-items:start}
 @media(max-width:780px){.cart-layout{grid-template-columns:1fr}}
 

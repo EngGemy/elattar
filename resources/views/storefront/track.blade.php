@@ -4,7 +4,7 @@
 
 @push('head-styles')
 <style>
-.page-title{font-family:'Amiri';font-size:2rem;font-weight:700;padding:28px 0 8px}
+.page-title{font-family:var(--font-thuluth);font-size:2rem;font-weight:400;padding:28px 0 8px}
 .order-number{font-family:'Reem Kufi';color:var(--gold-deep);font-size:1rem;margin-bottom:28px}
 
 .track-layout{display:grid;grid-template-columns:1fr 360px;gap:28px;padding-bottom:60px;align-items:start}

@@ -39,7 +39,7 @@ class Category extends Model implements AuditableContract
     /** كل المنتجات في التصنيف وأحفاده — استعلام واحد */
     public function allProducts()
     {
-        $ids = $this->descendantsAndSelf()->pluck('id');
+        $ids = static::descendantsAndSelf($this->getKey())->pluck('id');
 
         return Product::whereIn('category_id', $ids);
     }
@@ -50,6 +50,6 @@ class Category extends Model implements AuditableContract
     /** مسار كامل: "بقالة › حبوب › أرز" */
     public function getBreadcrumbAttribute(): string
     {
-        return $this->ancestorsAndSelf()->pluck('name')->implode(' › ');
+        return static::ancestorsAndSelf($this->getKey())->pluck('name')->implode(' › ');
     }
 }

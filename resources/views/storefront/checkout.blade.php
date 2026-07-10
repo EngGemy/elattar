@@ -4,7 +4,7 @@
 
 @push('head-styles')
 <style>
-.page-title{font-family:'Amiri';font-size:1.9rem;font-weight:700;padding:24px 0 8px}
+.page-title{font-family:var(--font-thuluth);font-size:1.9rem;font-weight:400;padding:24px 0 8px}
 .page-sub{color:var(--ink-soft);font-size:.92rem;margin-bottom:20px}
 .delivery-pill{display:inline-flex;align-items:center;gap:6px;background:#d1fae5;color:#065f46;
   padding:6px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-bottom:20px}

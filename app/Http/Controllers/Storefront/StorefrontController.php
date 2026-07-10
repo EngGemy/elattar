@@ -11,6 +11,7 @@ use App\Domain\Inventory\Models\Warehouse;
 use App\Domain\Pricing\Models\Promotion;
 use App\Domain\Pricing\Services\PromotionResolver;
 use App\Domain\Shared\ValueObjects\Money;
+use App\Support\ShopSettings;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -50,7 +51,9 @@ class StorefrontController extends Controller
             ->get()
             ->map(fn (Promotion $promo) => $this->mapPromotion($promo));
 
-        return view('storefront.home', compact('categories', 'featured', 'homePromotions'));
+        $heroSlides = $this->buildHeroSlides(ShopSettings::data(), $homePromotions, $featured);
+
+        return view('storefront.home', compact('categories', 'featured', 'homePromotions', 'heroSlides'));
     }
 
     public function catalog(Request $request)
@@ -63,7 +66,7 @@ class StorefrontController extends Controller
         if ($request->filled('category')) {
             $cat = Category::where('slug', $request->category)->first();
             if ($cat) {
-                $ids = $cat->descendantsAndSelf()->pluck('id');
+                $ids = Category::descendantsAndSelf($cat->getKey())->pluck('id');
                 $query->whereIn('category_id', $ids);
             }
         }
@@ -146,6 +149,7 @@ class StorefrontController extends Controller
             'name'               => $p->name,
             'slug'               => $p->slug,
             'category'           => $p->category?->name,
+            'category_slug'      => $p->category?->slug,
             'image'              => $p->getFirstMediaUrl('main', 'card'),
             'thumb'              => $p->getFirstMediaUrl('main', 'thumb'),
             'price_minor'        => $default['price_minor'] ?? 0,
@@ -238,5 +242,51 @@ class StorefrontController extends Controller
             'show_countdown'  => $promo->daysRemaining() !== null && $promo->daysRemaining() < 7,
             'products'        => $productRows,
         ];
+    }
+
+    /** @param  Collection<int, array<string, mixed>>  $homePromotions
+     * @param  Collection<int, array<string, mixed>>  $featured
+     * @return list<array<string, mixed>>
+     */
+    private function buildHeroSlides(array $shop, Collection $homePromotions, Collection $featured): array
+    {
+        $slides = [[
+            'theme'     => 'saffron',
+            'eyebrow'   => $shop['tagline'],
+            'title'     => $shop['hero_title'],
+            'subtitle'  => $shop['hero_subtitle'],
+            'badge'     => null,
+            'image'     => $shop['logo_url'],
+            'cta'       => route('storefront.catalog'),
+            'cta_label' => 'تسوّق الآن',
+        ]];
+
+        foreach ($homePromotions as $promo) {
+            $slides[] = [
+                'theme'     => 'ember',
+                'eyebrow'   => 'عرض حصري',
+                'title'     => $promo['name'],
+                'subtitle'  => $promo['description'] ?: 'خصم ' . $promo['discount_label'],
+                'badge'     => $promo['discount_label'],
+                'image'     => $promo['banner'] ?: null,
+                'cta'       => route('storefront.offers'),
+                'cta_label' => 'اكتشف العرض',
+            ];
+        }
+
+        foreach ($featured->take(5) as $product) {
+            $slides[] = [
+                'theme'     => 'olive',
+                'eyebrow'   => 'منتج مميّز',
+                'title'     => $product['name'],
+                'subtitle'  => $product['short_desc'] ?: ('يبدأ من ' . $product['price_fmt']),
+                'badge'     => $product['sale_badge'],
+                'image'     => $product['image'] ?: null,
+                'cta'       => route('storefront.product', $product['slug']),
+                'cta_label' => 'اطلب الآن',
+            ];
+        }
+
+        return $slides;
     }
 }
