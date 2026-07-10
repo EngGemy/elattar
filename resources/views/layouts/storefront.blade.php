@@ -5,18 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>@yield('title', $shop['name'] . ' — ' . $shop['tagline'])</title>
 <meta name="description" content="@yield('description', $shop['description'])">
-<link rel="preconnect" href="https://db.onlinewebfonts.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Katibeh&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
-@font-face{
-  font-family:'Thuluth';
-  src:url('https://db.onlinewebfonts.com/t/4191b42ee098af4b2d29ef55b66483a6.woff2') format('woff2');
-  font-weight:normal;font-style:normal;font-display:swap;
-}
-/* ═══ ATTAR — Sunlit Spice Bazaar (light cinematic) ═══ */
+/* ═══ خطوط عطارة مصرية: ثلث (عناوين) + نسخ (نصوص) ═══ */
 :root{
   --ink:#2a1810;
   --ink-soft:#7a6254;
@@ -35,15 +29,23 @@
   --hair:rgba(42,24,16,.1);
   --shadow:0 22px 55px -22px rgba(42,24,16,.18);
   --radius:18px;
-  --font-thuluth:'Thuluth','Amiri',serif;
-  --font-body:'El Messiri',sans-serif;
+  /* Katibeh: خط ثلثي للعناوين — Noto Naskh: نسخ للقراءة */
+  --font-thuluth:'Katibeh','Aref Ruqaa',serif;
+  --font-naskh:'Noto Naskh Arabic','Amiri',serif;
+  --font-body:var(--font-naskh);
   --font-ui:'Reem Kufi',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 [x-cloak]{display:none!important}
-html{scroll-behavior:smooth}
+html{
+  scroll-behavior:smooth;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
 body{
-  font-family:var(--font-body);color:var(--ink);
+  font-family:var(--font-body);font-weight:400;color:var(--ink);line-height:1.85;
+  font-feature-settings:'liga' 1,'calt' 1;
   background:
     radial-gradient(ellipse 90% 50% at 10% -5%,rgba(255,176,32,.12),transparent 50%),
     radial-gradient(ellipse 70% 40% at 95% 10%,rgba(196,92,42,.08),transparent 45%),
@@ -52,9 +54,15 @@ body{
 }
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
-input,textarea,select{font-family:var(--font-body);background:var(--card);color:var(--ink);border-color:var(--hair)}
-button{font-family:var(--font-body);cursor:pointer}
-h1,h2,h3,h4{font-family:var(--font-thuluth);font-weight:400;line-height:1.35}
+input,textarea,select{
+  font-family:var(--font-naskh);font-weight:500;background:var(--card);color:var(--ink);border-color:var(--hair);
+}
+button{font-family:var(--font-naskh);font-weight:600;cursor:pointer}
+h1,h2,h3,h4,.font-thuluth{
+  font-family:var(--font-thuluth);font-weight:400;line-height:1.5;
+  font-feature-settings:'liga' 1,'calt' 1,'mark' 1;
+}
+p,li,label,.font-naskh{font-family:var(--font-naskh)}
 .wrap{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,24px);position:relative;z-index:1}
 
 /* ── Header ── */
@@ -71,18 +79,18 @@ header.top{
 .brand-seal{
   background:linear-gradient(145deg,#fff8e8,#f5d88a);
   display:grid;place-items:center;
-  color:var(--gold-deep);font-size:1.45rem;font-family:var(--font-thuluth);
+  color:var(--gold-deep);font-size:1.55rem;font-family:var(--font-thuluth);
   border:2px solid rgba(200,134,10,.35);
   box-shadow:0 6px 20px -6px rgba(200,134,10,.35);
 }
 .brand-logo{object-fit:cover;border:2px solid rgba(200,134,10,.3)}
 .brand > div{min-width:0}
 .brand b{
-  display:block;font-size:clamp(1rem,2.8vw,1.35rem);color:var(--ink);
-  font-family:var(--font-thuluth);line-height:1.2;
+  display:block;font-size:clamp(1.05rem,2.8vw,1.45rem);color:var(--ink);
+  font-family:var(--font-thuluth);line-height:1.35;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(52vw,280px);
 }
-.brand span{display:block;font-size:.62rem;color:var(--gold);font-weight:500;margin-top:2px;font-family:var(--font-body)}
+.brand span{display:block;font-size:.68rem;color:var(--gold);font-weight:500;margin-top:3px;font-family:var(--font-naskh)}
 .top-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
 .wa-top{
   display:flex;align-items:center;gap:7px;
