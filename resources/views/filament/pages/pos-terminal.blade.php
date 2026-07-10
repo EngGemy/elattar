@@ -30,11 +30,17 @@
     .pos-brand b{font-size:1rem;display:block;line-height:1.2}
     .pos-brand small{font-size:.65rem;color:var(--gold-deep);font-family:'El Messiri';font-weight:500}
 
-    .pos-search{flex:1;min-width:220px;max-width:520px;position:relative}
+    .pos-search{flex:1;min-width:220px;max-width:520px;display:flex;gap:8px;align-items:stretch}
+    .pos-search-field{position:relative;flex:1;min-width:0}
     .pos-search input{width:100%;background:var(--card);border:1.5px solid var(--hair);border-radius:40px;
         padding:10px 44px 10px 16px;font-family:'El Messiri';font-size:.95rem;color:var(--ink)}
     .pos-search input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,137,43,.12)}
-    .pos-search svg{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--ink-soft)}
+    .pos-search-field svg{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--ink-soft);pointer-events:none;z-index:1}
+    .pos-search-btn{
+        flex-shrink:0;background:linear-gradient(135deg,var(--gold),#d4a85a);color:var(--ink);border:none;
+        padding:0 18px;border-radius:40px;font-family:'Reem Kufi';font-weight:700;font-size:.82rem;cursor:pointer;
+        box-shadow:0 4px 14px -4px rgba(184,137,43,.45);white-space:nowrap;
+    }
 
     .pos-kpis{display:flex;gap:8px;flex-wrap:wrap}
     .pos-kpi{background:var(--card);border:1px solid var(--hair);border-radius:12px;padding:6px 12px;text-align:center;min-width:72px}
@@ -246,7 +252,7 @@
     $brandName  = filament()->getBrandName();
 @endphp
 
-@if (! $session)
+@if (! $registerSession)
 <div class="pos pos-open">
     <div class="pos-open-card" x-data="{ float: 0, loading: false }">
         <div class="seal-lg">ع</div>
@@ -282,14 +288,17 @@
                 @endif
                 <div>
                     <b>{{ $brandName }}</b>
-                    <small>{{ $session->register->name ?? 'كاشير' }} — شيفت #{{ $session->id }}</small>
+                    <small>{{ $registerSession->register->name ?? 'كاشير' }} — شيفت #{{ $registerSession->id }}</small>
                 </div>
             </div>
 
             <div class="pos-search">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input x-ref="search" x-model="query" @keydown.enter="handleBarcode()"
-                       placeholder="ابحث بالاسم أو SKU أو امسح الباركود… (F2)">
+                <div class="pos-search-field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input x-ref="search" x-model="query" @keydown.enter="handleBarcode()"
+                           placeholder="ابحث بالاسم أو SKU أو امسح الباركود… (F2)">
+                </div>
+                <button type="button" class="pos-search-btn" @click="$refs.search?.focus()">بحث</button>
             </div>
 
             <div class="pos-kpis">

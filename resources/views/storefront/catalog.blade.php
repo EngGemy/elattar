@@ -7,11 +7,18 @@
 /* Toolbar */
 .toolbar{position:sticky;top:68px;z-index:40;background:linear-gradient(180deg,rgba(241,233,216,.97),rgba(241,233,216,.9));
   backdrop-filter:blur(8px);padding:16px 0 12px;border-bottom:1px solid var(--hair);margin-bottom:28px}
-.search-box{position:relative;max-width:460px;margin:0 auto 14px}
+.search-row{display:flex;gap:10px;align-items:stretch;max-width:560px;margin:0 auto 14px}
+.search-box{position:relative;flex:1;min-width:0}
 .search-box input{width:100%;background:var(--card);border:1.5px solid var(--hair);border-radius:40px;
   padding:12px 46px 12px 18px;font-size:1rem;color:var(--ink);outline:none;transition:.18s;font-family:var(--font-naskh)}
 .search-box input:focus{border-color:var(--gold)}
-.search-box svg{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--ink-soft);pointer-events:none}
+.search-box svg{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--ink-soft);pointer-events:none;z-index:1}
+.search-btn{
+  flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--saffron));color:#fff;border:none;
+  padding:0 22px;border-radius:40px;font-family:var(--font-naskh);font-weight:700;font-size:.92rem;cursor:pointer;
+  box-shadow:0 6px 20px -6px rgba(200,134,10,.4);transition:.2s;white-space:nowrap;
+}
+.search-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px -6px rgba(200,134,10,.5)}
 .filters{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;align-items:center}
 .chip{background:var(--parchment-2);border:1px solid var(--hair);color:var(--ink-soft);padding:7px 18px;
   border-radius:30px;cursor:pointer;font-weight:600;font-size:.9rem;transition:.15s;white-space:nowrap;text-decoration:none;
@@ -85,12 +92,14 @@
 <div class="toolbar">
   <div class="wrap">
     <form method="GET" action="{{ route('storefront.catalog') }}" id="filter-form">
-      <div class="search-box">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text" name="q" value="{{ request('q') }}" placeholder="ابحث عن منتج…"
-               onchange="this.form.submit()">
+      <div class="search-row">
+        <div class="search-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث عن منتج…" autocomplete="off">
+        </div>
+        <button type="submit" class="search-btn">بحث</button>
       </div>
 
       <div class="filters">

@@ -275,16 +275,22 @@
   background:var(--card);border:1px solid var(--hair);border-radius:18px;
   padding:16px;margin-bottom:20px;box-shadow:var(--shadow);
 }
-.offers-search{position:relative;margin-bottom:12px}
+.offers-search{position:relative;margin-bottom:12px;display:flex;gap:10px;align-items:stretch}
+.offers-search-field{position:relative;flex:1;min-width:0}
 .offers-search input{
   width:100%;background:var(--parchment);border:1.5px solid var(--hair);border-radius:40px;
   padding:11px 44px 11px 16px;font-size:.95rem;color:var(--ink);outline:none;transition:.18s;
   font-family:var(--font-naskh);font-weight:500;
 }
 .offers-search input:focus{border-color:var(--gold)}
-.offers-search svg{
+.offers-search-field svg{
   position:absolute;right:14px;top:50%;transform:translateY(-50%);
-  width:18px;height:18px;color:var(--ink-soft);pointer-events:none;
+  width:18px;height:18px;color:var(--ink-soft);pointer-events:none;z-index:1;
+}
+.offers-search-btn{
+  flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--saffron));color:#fff;border:none;
+  padding:0 20px;border-radius:40px;font-family:var(--font-naskh);font-weight:700;font-size:.88rem;cursor:pointer;
+  box-shadow:0 6px 18px -6px rgba(200,134,10,.4);white-space:nowrap;
 }
 .offers-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .offers-chip{
@@ -537,11 +543,14 @@
 
     <div class="offers-toolbar">
       <div class="offers-search">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="search" x-model="query" @input.debounce.200ms="applyFilter()"
-               placeholder="ابحث في منتجات العروض…" autocomplete="off">
+        <div class="offers-search-field">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="search" x-model="query" @input.debounce.200ms="applyFilter()" @keydown.enter.prevent="applyFilter()"
+                 placeholder="ابحث في منتجات العروض…" autocomplete="off">
+        </div>
+        <button type="button" class="offers-search-btn" @click="applyFilter()">بحث</button>
       </div>
       <div class="offers-filters">
         <button type="button" class="offers-chip" :class="category === '' && 'active'" @click="setCategory('')">الكل</button>
@@ -711,34 +720,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
-
-function homeOffersFilter(promos = {}) {
-  return {
-    promos,
-    query: '',
-    category: '',
-    matches(p) {
-      const q = this.query.trim().toLowerCase();
-      const catOk = !this.category || p.category_slug === this.category;
-      const qOk = !q || p.name.toLowerCase().includes(q);
-      return catOk && qOk;
-    },
-    promoHasVisible(slug) {
-      return (this.promos[slug] || []).some((p) => this.matches(p));
-    },
-    setCategory(slug) {
-      this.category = slug;
-      this.applyFilter();
-    },
-    applyFilter() {
-      this.$nextTick(() => this.refreshSwipers());
-    },
-    refreshSwipers() {
-      document.querySelectorAll('.offer-prod-swiper').forEach((el) => {
-        if (el._swiper) el._swiper.update();
-      });
-    },
-  };
-}
 </script>
 @endpush

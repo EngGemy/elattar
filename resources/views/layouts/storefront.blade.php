@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>@yield('title', $shop['name'] . ' — ' . $shop['tagline'])</title>
 <meta name="description" content="@yield('description', $shop['description'])">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -431,6 +432,39 @@ function productCard(product) {
 
         fmt(minor) {
             return ((minor || 0) / 100).toLocaleString('ar-EG', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        },
+    };
+}
+
+function csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
+function homeOffersFilter(promos = {}) {
+    return {
+        promos,
+        query: '',
+        category: '',
+        matches(p) {
+            const q = this.query.trim().toLowerCase();
+            const catOk = !this.category || p.category_slug === this.category;
+            const qOk = !q || p.name.toLowerCase().includes(q);
+            return catOk && qOk;
+        },
+        promoHasVisible(slug) {
+            return (this.promos[slug] || []).some((p) => this.matches(p));
+        },
+        setCategory(slug) {
+            this.category = slug;
+            this.applyFilter();
+        },
+        applyFilter() {
+            this.$nextTick(() => this.refreshSwipers());
+        },
+        refreshSwipers() {
+            document.querySelectorAll('.offer-prod-swiper').forEach((el) => {
+                if (el._swiper) el._swiper.update();
+            });
         },
     };
 }
