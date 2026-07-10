@@ -10,7 +10,17 @@
   padding:6px 14px;border-radius:20px;font-size:.82rem;font-weight:600;margin-bottom:20px}
 
 .checkout-layout{display:grid;grid-template-columns:1fr 320px;gap:22px;padding-bottom:50px;align-items:start}
-@media(max-width:780px){.checkout-layout{grid-template-columns:1fr}}
+@media(max-width:780px){
+  .checkout-layout{display:flex;flex-direction:column;gap:16px}
+  .checkout-layout .summary-card{order:-1;position:static;top:auto}
+  .page-title{font-size:1.55rem;padding:18px 0 6px}
+  .page-sub{font-size:.86rem;margin-bottom:14px}
+  .delivery-pill{font-size:.76rem;padding:5px 12px;margin-bottom:14px}
+  .form-card{padding:16px}
+  .pay-opt{padding:12px}
+  .pay-top{gap:10px}
+  .pay-icon{width:36px;height:36px;font-size:1rem}
+}
 
 .form-card{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);padding:22px;margin-bottom:16px}
 .form-card h2{font-family:'Reem Kufi';font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--ink)}
@@ -41,7 +51,8 @@
 
 .summary-card{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);padding:20px;position:sticky;top:90px}
 .summary-card h3{font-family:'Reem Kufi';font-size:1rem;font-weight:700;margin-bottom:14px}
-.sum-item{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--hair);font-size:.86rem}
+.sum-item{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--hair);font-size:.86rem;align-items:flex-start}
+.sum-item span:first-child{flex:1;min-width:0;word-break:break-word;line-height:1.45}
 .sum-item:last-child{border-bottom:none}
 .sum-total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:2px solid var(--hair)}
 .sum-total span:last-child{font-family:'Reem Kufi';font-weight:800;font-size:1.2rem;color:var(--gold-deep)}

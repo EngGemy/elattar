@@ -88,11 +88,11 @@ final class PlaceOrderAction
                 ttlMinutes:  $channel === SalesChannel::Pos ? null : 30,
             );
 
-            $subtotal    = Money::zero();
+            $subtotal     = Money::zero();
             $lineDiscount = Money::zero();
-            $totalTax    = Money::zero();
-            $totalCogs   = Money::zero();
-            $totalWeight = 0.0;
+            $totalTax     = Money::zero();
+            $totalCogs    = Money::zero();
+            $totalWeight  = 0.0;
 
             // ── ٣) بناء الأسطر بلقطات مجمّدة
             foreach ($items as $item) {
@@ -105,11 +105,12 @@ final class PlaceOrderAction
                 $lineDisc  = Money::ofMinor((int) ($item['discount_minor'] ?? 0));
                 $lineNet   = $lineGross->minus($lineDisc)->clampToZero();
 
-                // التكلفة — بنفس منطق التسعير بالوزن
+                // التكلفة — بنفس منطق التسعير بالوزن (MySQL يُرجع cost_minor كسلسلة عبر getRawOriginal)
                 $costFactor = in_array($variant->unit, [UnitOfMeasure::Gram, UnitOfMeasure::Ml], true)
                     ? $qty / 1000
                     : $qty;
-                $lineCost = Money::ofMinor((int) ($variant->getRawOriginal('cost_minor') ?? 0))->multipliedBy($costFactor);
+                $unitCostMinor = (int) ($variant->getRawOriginal('cost_minor') ?? $variant->cost()->minor);
+                $lineCost = Money::ofMinor($unitCostMinor)->multipliedBy($costFactor);
 
                 // الضريبة
                 $taxRate  = $variant->product->taxRate();
@@ -134,19 +135,19 @@ final class PlaceOrderAction
                     'attributes_snapshot' => $variant->attributesSnapshot(),
                     'qty'                 => $qty,
                     'unit'                => $variant->unit,
-                    'unit_price_minor'    => $unitPrice->minor,
-                    'cost_minor'          => (int) ($variant->getRawOriginal('cost_minor') ?? 0),
-                    'line_discount_minor' => $lineDisc->minor,
+                    'unit_price_minor'    => (int) $unitPrice->minor,
+                    'cost_minor'          => $unitCostMinor,
+                    'line_discount_minor' => (int) $lineDisc->minor,
                     'tax_rate'            => $taxRate / 100,
-                    'tax_minor'           => $taxAmount->minor,
-                    'line_total_minor'    => $lineTotal->minor,
+                    'tax_minor'           => (int) $taxAmount->minor,
+                    'line_total_minor'    => (int) $lineTotal->minor,
                 ]);
 
                 $subtotal     = $subtotal->plus($lineGross);
                 $lineDiscount = $lineDiscount->plus($lineDisc);
                 $totalTax     = $totalTax->plus($taxAmount);
                 $totalCogs    = $totalCogs->plus($lineCost);
-                $totalWeight += ($variant->weight_grams ?? 0) * $qty / 1000;
+                $totalWeight += (int) ($variant->weight_grams ?? 0) * $qty / 1000;
             }
 
             // ── ٤) الكوبون على مستوى الطلب
@@ -164,7 +165,7 @@ final class PlaceOrderAction
                     'coupon_id'      => $coupon->id,
                     'customer_id'    => $customerId,
                     'order_id'       => $order->id,
-                    'discount_minor' => $orderDiscount->minor,
+                    'discount_minor' => (int) $orderDiscount->minor,
                 ]);
 
                 $coupon->increment('used_count');
@@ -181,12 +182,12 @@ final class PlaceOrderAction
             $total = $subtotal->minus($totalDiscount)->plus($shipping)->clampToZero();
 
             $order->update([
-                'subtotal_minor' => $subtotal->minor,
-                'discount_minor' => $totalDiscount->minor,
-                'tax_minor'      => $totalTax->minor,
-                'shipping_minor' => $shipping->minor,
-                'total_minor'    => $total->minor,
-                'cogs_minor'     => $totalCogs->minor,
+                'subtotal_minor' => (int) $subtotal->minor,
+                'discount_minor' => (int) $totalDiscount->minor,
+                'tax_minor'      => (int) $totalTax->minor,
+                'shipping_minor' => (int) $shipping->minor,
+                'total_minor'    => (int) $total->minor,
+                'cogs_minor'     => (int) $totalCogs->minor,
             ]);
 
             OrderStatusHistory::create([

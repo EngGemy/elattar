@@ -43,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->font('Cairo')
             ->renderHook(
                 'panels::head.end',
-                fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-attar.css') . '?v=1">',
+                fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-attar.css') . '?v=2">',
             )
             ->maxContentWidth(MaxWidth::Full)
 

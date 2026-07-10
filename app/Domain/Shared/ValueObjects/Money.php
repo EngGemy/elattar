@@ -17,9 +17,21 @@ final readonly class Money implements \JsonSerializable, \Stringable
         public string $currency = 'EGP',
     ) {}
 
-    /** إنشاء من القروش مباشرة */
-    public static function ofMinor(int $minor, string $currency = 'EGP'): self
+    /** إنشاء من القروش مباشرة — يقبل int أو سلسلة رقمية صحيحة (سلوك MySQL/PDO) */
+    public static function ofMinor(int|string $minor, string $currency = 'EGP'): self
     {
+        if (is_string($minor)) {
+            $minor = trim($minor);
+
+            if (! preg_match('/^-?\d+$/', $minor)) {
+                throw new InvalidArgumentException(
+                    "المبلغ بالقروش يجب أن يكون عددًا صحيحًا: «{$minor}»"
+                );
+            }
+
+            $minor = (int) $minor;
+        }
+
         return new self($minor, $currency);
     }
 

@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * تحويل عمود bigint (قروش) ↔ كائن Money.
+ * يُطبّق Money::ofMinor() على القيمة الخام — يتعامل مع سلاسل MySQL/PDO تلقائيًا.
+ *
  * الاستخدام: protected $casts = ['price_minor' => MoneyCast::class];
  */
 class MoneyCast implements CastsAttributes
@@ -19,9 +21,10 @@ class MoneyCast implements CastsAttributes
         if ($value === null) {
             return null;
         }
+
         $currency = $attributes['currency'] ?? 'EGP';
 
-        return Money::ofMinor((int) $value, $currency);
+        return Money::ofMinor($value, $currency);
     }
 
     public function set(Model $model, string $key, mixed $value, array $attributes): array
@@ -29,10 +32,11 @@ class MoneyCast implements CastsAttributes
         if ($value === null) {
             return [$key => null];
         }
+
         if ($value instanceof Money) {
             return [$key => $value->minor];
         }
 
-        return [$key => (int) $value];
+        return [$key => Money::ofMinor($value)->minor];
     }
 }

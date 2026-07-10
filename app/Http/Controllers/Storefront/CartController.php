@@ -23,8 +23,8 @@ class CartController extends Controller
         $couponObj     = null;
         if ($coupon) {
             $couponObj = Coupon::where('code', $coupon)->first();
-            if ($couponObj && $couponObj->isValidFor(Money::ofMinor($subtotal))) {
-                $discountMinor = $couponObj->discountFor(Money::ofMinor($subtotal))->minor;
+            if ($couponObj && $couponObj->isValidFor(Money::ofMinor((int) $subtotal))) {
+                $discountMinor = $couponObj->discountFor(Money::ofMinor((int) $subtotal))->minor;
             } else {
                 session()->forget('storefront_coupon');
                 $coupon = null;
@@ -144,7 +144,7 @@ class CartController extends Controller
         $subtotal = array_reduce($cart, fn ($c, $l) => $c + $l['line_total_minor'], 0);
         $coupon   = Coupon::where('code', $code)->first();
 
-        if (! $coupon || ! $coupon->isValidFor(Money::ofMinor($subtotal))) {
+        if (! $coupon || ! $coupon->isValidFor(Money::ofMinor((int) $subtotal))) {
             return back()->with('error', 'الكوبون غير صالح أو لا يُطبَّق على المبلغ الحالي.');
         }
 

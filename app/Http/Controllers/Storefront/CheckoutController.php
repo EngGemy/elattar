@@ -35,7 +35,7 @@ class CheckoutController extends Controller
             $couponObj = \App\Domain\Pricing\Models\Coupon::where('code', $coupon)->first();
             if ($couponObj) {
                 $discountMinor = $couponObj->discountFor(
-                    \App\Domain\Shared\ValueObjects\Money::ofMinor($subtotal)
+                    \App\Domain\Shared\ValueObjects\Money::ofMinor((int) $subtotal)
                 )->minor;
             }
         }

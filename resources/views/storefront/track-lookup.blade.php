@@ -10,6 +10,12 @@
 
 .track-card{max-width:440px;margin:0 auto 60px;background:var(--card);border:1px solid var(--hair);
   border-radius:var(--radius);padding:28px 24px;box-shadow:0 16px 40px -20px rgba(36,26,17,.4)}
+@media(max-width:600px){
+  .track-hero{padding:24px 0 16px}
+  .track-card{margin:0 0 40px;padding:20px 16px;border-radius:14px}
+  .track-card h2{font-size:.98rem}
+  .field input{padding:12px 13px;font-size:.95rem}
+}
 .track-card h2{font-family:'Reem Kufi';font-size:1.05rem;font-weight:700;margin-bottom:18px;text-align:center}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:.86rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px}

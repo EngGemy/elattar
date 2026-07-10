@@ -8,7 +8,19 @@
 .order-number{font-family:'Reem Kufi';color:var(--gold-deep);font-size:1rem;margin-bottom:28px}
 
 .track-layout{display:grid;grid-template-columns:1fr 360px;gap:28px;padding-bottom:60px;align-items:start}
-@media(max-width:780px){.track-layout{grid-template-columns:1fr}}
+@media(max-width:780px){
+  .track-layout{display:flex;flex-direction:column;gap:18px}
+  .track-layout .order-card{order:-1;position:static;top:auto}
+  .page-title{font-size:1.55rem;padding:18px 0 6px}
+  .order-number{font-size:.92rem;margin-bottom:18px}
+  .status-hero{padding:20px 16px}
+  .status-icon{width:58px;height:58px;font-size:1.6rem}
+  .status-label{font-size:1.2rem}
+  .progress-track{overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch}
+  .step-dot{width:26px;height:26px;font-size:.7rem}
+  .step-name{font-size:.65rem;max-width:52px}
+  .timeline-card,.order-card{padding:18px}
+}
 
 /* Status hero */
 .status-hero{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);
@@ -52,7 +64,7 @@
 .order-line{display:flex;justify-content:space-between;align-items:start;padding:9px 0;
   border-bottom:1px solid var(--hair);font-size:.88rem;gap:8px}
 .order-line:last-child{border-bottom:none}
-.order-line-name{color:var(--ink-soft);flex:1}
+.order-line-name{color:var(--ink-soft);flex:1;min-width:0;word-break:break-word;line-height:1.45}
 .order-line-price{font-family:'Reem Kufi';font-weight:700;color:var(--gold-deep);flex-shrink:0}
 .total-section{margin-top:16px;padding-top:14px;border-top:2px solid var(--hair)}
 .total-row{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:6px}

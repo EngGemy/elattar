@@ -6,7 +6,11 @@
 <style>
 .page-title{font-family:var(--font-thuluth);font-size:2rem;font-weight:400;padding:28px 0 20px}
 .cart-layout{display:grid;grid-template-columns:1fr 360px;gap:28px;padding-bottom:60px;align-items:start}
-@media(max-width:780px){.cart-layout{grid-template-columns:1fr}}
+@media(max-width:780px){
+  .cart-layout{display:flex;flex-direction:column;gap:16px}
+  .cart-layout .summary-card{order:-1;position:static;top:auto}
+  .page-title{font-size:1.55rem;padding:18px 0 14px}
+}
 
 /* Items table */
 .cart-table{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);overflow:hidden}
@@ -64,9 +68,14 @@
 .empty-cart p{font-size:1.1rem;margin:16px 0}
 
 @media(max-width:600px){
-  .cart-head,.cart-row{grid-template-columns:2fr 1fr auto;gap:8px}
-  .cart-head .col-total{display:none}
-  .cart-row .item-total{display:none}
+  .cart-head,.cart-row{grid-template-columns:1fr auto;gap:8px;padding:12px 14px}
+  .cart-head .col-price,.cart-head .col-total{display:none}
+  .cart-row .item-price,.cart-row .item-total{display:none}
+  .item-info{align-items:flex-start}
+  .item-name{font-size:.9rem;word-break:break-word}
+  .inline-qty input{width:46px}
+  .coupon-form{flex-direction:column}
+  .coupon-form button{width:100%}
 }
 </style>
 @endpush
@@ -91,7 +100,7 @@
       <div class="cart-table">
         <div class="cart-head">
           <span>المنتج</span>
-          <span>السعر</span>
+          <span class="col-price">السعر</span>
           <span class="col-total">الإجمالي</span>
           <span></span>
         </div>
