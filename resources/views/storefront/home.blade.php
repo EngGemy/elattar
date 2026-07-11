@@ -235,8 +235,10 @@
 }
 
 /* ── Product swipers ── */
-.prod-swiper-wrap{position:relative;padding:0 4px 40px}
-.prod-swiper .swiper-slide{height:auto;width:270px}
+.prod-swiper-wrap{position:relative;padding:0 4px 44px}
+.prod-swiper .swiper-slide{height:auto;width:252px;display:flex}
+.prod-swiper .swiper-slide .card{width:100%}
+.prod-swiper .card .thumb{height:156px}
 .prod-swiper .swiper-button-prev,.prod-swiper .swiper-button-next{
   top:auto;bottom:0;color:var(--ink);background:#fff;width:42px;height:42px;border-radius:50%;
   border:1px solid var(--hair);box-shadow:var(--shadow);
@@ -306,8 +308,9 @@
 }
 .offer-prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
 .offer-prod-swiper-wrap{display:none;position:relative;padding:0 4px 8px}
-.offer-prod-swiper .swiper-slide{width:min(78vw,260px);height:auto}
-.offer-prod-swiper .card .thumb{height:140px}
+.offer-prod-swiper .swiper-slide{width:min(76vw,248px);height:auto;display:flex}
+.offer-prod-swiper .swiper-slide .card{width:100%}
+.offer-prod-swiper .card .thumb{height:148px}
 .offer-prod-item[hidden]{display:none!important}
 
 @media(max-width:768px){

@@ -1,6 +1,6 @@
-{{-- بطاقة منتج تفاعلية — كميات، مخزون، إضافة للسلة --}}
-<div class="card" x-data="productCard(@js($p))">
-    <div class="thumb">
+{{-- بطاقة منتج — عرض مدمج واحترافي --}}
+<div class="card card-product" x-data="productCard(@js($p))">
+    <a href="{{ route('storefront.product', $p['slug']) }}" class="thumb thumb-link" aria-label="{{ $p['name'] }}">
         @if($p['image'])
             <img src="{{ $p['image'] }}" alt="{{ $p['name'] }}" loading="lazy">
         @else
@@ -11,13 +11,17 @@
             <span class="badge-sale">{{ $p['sale_badge'] }}</span>
         @endif
         <span class="badge-stock" :class="stockClass()" x-text="stockLabel()"></span>
-    </div>
+    </a>
 
     <div class="body">
-        <h3>{{ $p['name'] }}</h3>
-        @if(!empty($p['short_desc']))
-            <p class="desc">{{ $p['short_desc'] }}</p>
-        @endif
+        <div class="card-head">
+            <h3>
+                <a href="{{ route('storefront.product', $p['slug']) }}">{{ $p['name'] }}</a>
+            </h3>
+            @if(!empty($p['short_desc']))
+                <p class="desc">{{ $p['short_desc'] }}</p>
+            @endif
+        </div>
 
         <div class="price">
             <template x-if="variant?.compare_at_fmt">
@@ -29,9 +33,9 @@
 
         {{-- اختيار المتغيّر --}}
         <template x-if="product.variants.length > 1">
-            <div class="unit-row">
+            <div class="variant-chips">
                 <template x-for="v in product.variants" :key="v.id">
-                    <button type="button" class="unit-opt"
+                    <button type="button" class="weight-chip"
                             :class="selectedVariantId === v.id ? 'sel' : ''"
                             :disabled="v.available <= 0"
                             @click="selectVariant(v.id)"
@@ -40,60 +44,76 @@
             </div>
         </template>
 
-        {{-- أوزان للبهارات — من 1 جم حتى الكيلو --}}
-        <template x-if="variant?.is_weighted && variant?.available > 0">
-            <div class="weight-block">
-                <div class="weight-input-row">
-                    <label class="weight-lbl">الكمية بالجرام</label>
-                    <div class="weight-field">
-                        <button type="button" class="weight-step-btn" @click="adjustWeight(-1)">−</button>
+        <div class="card-purchase">
+            {{-- أوزان للبهارات --}}
+            <template x-if="variant?.is_weighted && variant?.available > 0">
+                <div class="weight-panel">
+                    <div class="weight-strip">
+                        <button type="button" class="weight-step-btn" @click="adjustWeight(-1)" aria-label="تقليل">−</button>
                         <input type="number" class="weight-input" x-model.number="weightGrams"
                                :min="variant.step || 1" :max="variant.available" :step="variant.step || 1"
-                               @change="snapWeight()">
+                               @change="snapWeight()" aria-label="الكمية بالجرام">
                         <span class="weight-unit">جم</span>
-                        <button type="button" class="weight-step-btn" @click="adjustWeight(1)">+</button>
+                        <button type="button" class="weight-step-btn" @click="adjustWeight(1)" aria-label="زيادة">+</button>
+                        <span class="weight-strip-total" x-text="weightPrice(weightGrams)"></span>
                     </div>
-                    <div class="weight-price-preview" x-text="weightPrice(weightGrams) + ' للكمية المختارة'"></div>
-                </div>
-                <div class="unit-row">
-                    <template x-for="w in weights" :key="w.g">
-                        <button type="button" class="unit-opt"
-                                :class="weightGrams === w.g ? 'sel' : ''"
-                                @click="weightGrams = w.g">
-                            <span x-text="w.label"></span>
-                            <small x-text="weightPrice(w.g)"></small>
-                        </button>
-                    </template>
-                </div>
-            </div>
-        </template>
 
-        {{-- كمية للقطع --}}
-        <template x-if="variant && !variant.is_weighted && variant.available > 0">
-            <div class="qty-row">
-                <span class="unit-chip" x-text="variant.label"></span>
-                <div class="stepper">
-                    <button type="button" @click="pieceQty = Math.max(variant.step, pieceQty - variant.step)">−</button>
-                    <span x-text="pieceQty"></span>
-                    <button type="button" @click="pieceQty = Math.min(variant.available, pieceQty + variant.step)">+</button>
-                </div>
-            </div>
-        </template>
+                    <div class="weight-chips" role="group" aria-label="كميات سريعة">
+                        <template x-for="w in primaryWeights" :key="w.g">
+                            <button type="button" class="weight-chip"
+                                    :class="weightGrams === w.g ? 'sel' : ''"
+                                    @click="weightGrams = w.g; snapWeight()"
+                                    x-text="w.label"></button>
+                        </template>
+                        <template x-if="extraWeights.length">
+                            <button type="button" class="weight-chip weight-chip--more"
+                                    :class="showExtraWeights ? 'sel' : ''"
+                                    @click="showExtraWeights = !showExtraWeights"
+                                    x-text="showExtraWeights ? 'أقل' : '···'"></button>
+                        </template>
+                    </div>
 
-        <button type="button" class="add-btn"
-                :class="{ 'added': justAdded, 'disabled': !canAdd }"
-                :disabled="!canAdd || loading"
-                @click="addToCart()">
-            <template x-if="!loading && !justAdded">
-                <span class="add-btn-inner">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    <span x-text="canAdd ? 'أضف للسلة' : 'نفد المخزون'"></span>
-                </span>
+                    <div class="weight-chips weight-chips--extra" x-show="showExtraWeights" x-transition.opacity.duration.200ms>
+                        <template x-for="w in extraWeights" :key="w.g">
+                            <button type="button" class="weight-chip"
+                                    :class="weightGrams === w.g ? 'sel' : ''"
+                                    @click="weightGrams = w.g; snapWeight()"
+                                    x-text="w.label"></button>
+                        </template>
+                    </div>
+                </div>
             </template>
-            <template x-if="loading"><span>جارٍ الإضافة…</span></template>
-            <template x-if="justAdded && !loading"><span>✓ تمت الإضافة</span></template>
-        </button>
+
+            {{-- كمية للقطع --}}
+            <template x-if="variant && !variant.is_weighted && variant.available > 0">
+                <div class="piece-panel">
+                    <span class="unit-chip" x-text="variant.label"></span>
+                    <div class="weight-strip weight-strip--piece">
+                        <button type="button" class="weight-step-btn"
+                                @click="pieceQty = Math.max(variant.step, pieceQty - variant.step)">−</button>
+                        <span class="piece-qty" x-text="pieceQty"></span>
+                        <button type="button" class="weight-step-btn"
+                                @click="pieceQty = Math.min(variant.available, pieceQty + variant.step)">+</button>
+                        <span class="weight-strip-total" x-text="pieceLineTotal()"></span>
+                    </div>
+                </div>
+            </template>
+
+            <button type="button" class="add-btn"
+                    :class="{ 'added': justAdded, 'disabled': !canAdd }"
+                    :disabled="!canAdd || loading"
+                    @click="addToCart()">
+                <template x-if="!loading && !justAdded">
+                    <span class="add-btn-inner">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span x-text="canAdd ? addBtnLabel() : 'نفد المخزون'"></span>
+                    </span>
+                </template>
+                <template x-if="loading"><span>جارٍ الإضافة…</span></template>
+                <template x-if="justAdded && !loading"><span>✓ تمت الإضافة</span></template>
+            </button>
+        </div>
     </div>
 </div>

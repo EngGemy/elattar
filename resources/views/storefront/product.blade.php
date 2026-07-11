@@ -41,25 +41,32 @@
 .var-btn:hover,.var-btn.active{border-color:var(--gold-deep);color:var(--gold-deep);background:var(--card)}
 
 /* Qty controls */
-.qty-section{background:var(--card);border:1.5px solid var(--hair);border-radius:var(--radius);padding:20px;margin-bottom:20px}
-.qty-section h4{font-weight:700;margin-bottom:14px;font-size:.95rem}
+.qty-section{background:var(--card);border:1.5px solid var(--hair);border-radius:16px;padding:18px 20px;margin-bottom:20px}
+.qty-section h4{font-weight:700;margin-bottom:12px;font-size:.92rem;color:var(--ink-soft)}
 
-.qty-field{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.qty-btn{width:40px;height:40px;border-radius:9px;border:2px solid var(--hair);background:var(--parchment-2);
-  font-size:1.3rem;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center}
-.qty-btn:hover{border-color:var(--gold);background:var(--parchment)}
-.qty-input{width:80px;text-align:center;border:2px solid var(--hair);border-radius:9px;padding:8px 4px;
-  font-size:1.1rem;font-weight:700;background:var(--card);color:var(--ink);outline:none}
-.qty-input:focus{border-color:var(--gold)}
-.qty-unit{font-size:.9rem;color:var(--ink-soft);font-weight:600}
+.qty-strip{display:flex;align-items:center;gap:8px;background:var(--parchment-2);border:1px solid var(--hair);border-radius:14px;padding:8px 10px;margin-bottom:12px}
+.qty-btn{width:42px;height:42px;border-radius:11px;border:none;background:#fff;
+  font-size:1.35rem;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 4px rgba(42,24,16,.08);color:var(--ink);flex-shrink:0}
+.qty-btn:hover{color:var(--gold-deep)}
+.qty-input{flex:1;min-width:72px;text-align:center;border:none;border-radius:0;padding:6px 4px;
+  font-size:1.15rem;font-weight:700;background:transparent;color:var(--ink);outline:none;-moz-appearance:textfield}
+.qty-input::-webkit-outer-spin-button,.qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty-unit{font-size:.88rem;color:var(--ink-soft);font-weight:600;flex-shrink:0}
+.qty-strip-total{margin-inline-start:auto;padding-inline-start:12px;border-inline-start:1px solid var(--hair);
+  font-size:.95rem;color:var(--gold-deep);font-weight:700;white-space:nowrap}
 
-/* Quick weight buttons */
-.quick-weights{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.qw-btn{background:var(--parchment-2);border:1.5px solid var(--hair);border-radius:8px;
-  padding:6px 12px;font-size:.82rem;font-weight:700;cursor:pointer;transition:.15s;color:var(--ink-soft)}
-.qw-btn:hover,.qw-btn.active{border-color:var(--olive);color:var(--olive);background:rgba(105,112,56,.08)}
+/* Quick weight chips */
+.quick-weights{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.quick-weights::-webkit-scrollbar{display:none}
+.qw-btn{flex-shrink:0;background:var(--parchment);border:1px solid var(--hair);border-radius:20px;
+  padding:7px 14px;font-size:.8rem;font-weight:600;cursor:pointer;transition:.15s;color:var(--ink-soft);font-family:var(--font-ui)}
+.qw-btn:hover{border-color:rgba(200,134,10,.45);color:var(--ink)}
+.qw-btn.active{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+.qw-btn--more{min-width:38px;text-align:center;background:transparent;font-weight:700}
 
-.line-total{font-family:'Reem Kufi';font-size:1.1rem;color:var(--gold-deep);font-weight:700}
+.line-total{font-family:var(--font-naskh);font-size:.88rem;color:var(--ink-soft);font-weight:500;margin-top:4px}
+.line-total strong{color:var(--gold-deep);font-size:1.05rem;font-weight:700}
 
 .stock-badge{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;
   padding:5px 14px;border-radius:20px;margin-bottom:16px}
@@ -164,32 +171,46 @@
 
       {{-- Quantity selector --}}
       <div class="qty-section">
-        <h4 x-text="currentVariant?.is_weighted ? 'اختر الكمية بالجرام' : 'الكمية'"></h4>
+        <h4 x-text="currentVariant?.is_weighted ? 'اختر الكمية' : 'الكمية'"></h4>
 
-        {{-- Quick weights (for weighted products) — من 1 جم --}}
-        <div class="quick-weights" x-show="currentVariant?.is_weighted">
-          <template x-for="g in [1, 25, 50, 100, 250, 500, 1000]" :key="g">
-            <button @click="qty = g"
-                    :class="qty === g ? 'active' : ''"
-                    class="qw-btn"
-                    x-text="g >= 1000 ? (g/1000)+' كجم' : g+' جم'">
-            </button>
-          </template>
+        {{-- Quick weights (for weighted products) --}}
+        <div x-show="currentVariant?.is_weighted">
+          <div class="quick-weights">
+            <template x-for="g in primaryQuickWeights" :key="g">
+              <button type="button" @click="qty = g"
+                      :class="qty === g ? 'active' : ''"
+                      class="qw-btn"
+                      x-text="weightLabel(g)"></button>
+            </template>
+            <button type="button" class="qw-btn qw-btn--more"
+                    :class="showExtraQuickWeights ? 'active' : ''"
+                    @click="showExtraQuickWeights = !showExtraQuickWeights"
+                    x-text="showExtraQuickWeights ? 'أقل' : '···'"></button>
+          </div>
+          <div class="quick-weights" x-show="showExtraQuickWeights" x-transition.opacity.duration.200ms>
+            <template x-for="g in extraQuickWeights" :key="g">
+              <button type="button" @click="qty = g"
+                      :class="qty === g ? 'active' : ''"
+                      class="qw-btn"
+                      x-text="weightLabel(g)"></button>
+            </template>
+          </div>
         </div>
 
-        <div class="qty-field">
-          <button @click="decrement()" class="qty-btn">−</button>
+        <div class="qty-strip">
+          <button type="button" @click="decrement()" class="qty-btn">−</button>
           <input type="number" class="qty-input" x-model.number="qty"
                  :step="currentVariant?.step ?? 1"
                  :min="currentVariant?.step ?? 1"
                  :max="currentVariant?.available ?? 999999"
                  @change="snapQty()">
           <span class="qty-unit" x-text="currentVariant?.is_weighted ? 'جم' : (currentVariant?.unit_label ?? '')"></span>
-          <button @click="increment()" class="qty-btn">+</button>
+          <button type="button" @click="increment()" class="qty-btn">+</button>
+          <span class="qty-strip-total" x-text="fmt(lineTotal)"></span>
         </div>
 
         <div class="line-total">
-          الإجمالي: <span x-text="fmt(lineTotal)"></span>
+          الإجمالي: <strong x-text="fmt(lineTotal)"></strong>
         </div>
       </div>
 
@@ -205,7 +226,7 @@
             <path stroke-linecap="round" stroke-linejoin="round"
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
-          <span x-text="currentVariant?.available <= 0 ? 'نفد المخزون' : 'أضف إلى السلة'"></span>
+          <span x-text="currentVariant?.available <= 0 ? 'نفد المخزون' : ('أضف للسلة · ' + fmt(lineTotal))"></span>
         </button>
       </form>
 
@@ -219,8 +240,11 @@ function productPage(variants, defaultVariant) {
     return {
         variants,
         currentVariant: defaultVariant,
-        qty: defaultVariant?.step ?? 1,
+        qty: defaultVariant?.is_weighted ? 100 : (defaultVariant?.step ?? 1),
         activeImage: '{{ $mainImage }}',
+        showExtraQuickWeights: false,
+        primaryQuickWeights: [50, 100, 250, 500],
+        extraQuickWeights: [1000, 25, 1],
 
         get stockStatus() {
             const av = this.currentVariant?.available ?? 0;
@@ -238,7 +262,14 @@ function productPage(variants, defaultVariant) {
 
         selectVariant(v) {
             this.currentVariant = v;
-            this.qty = v.step ?? 1;
+            this.showExtraQuickWeights = false;
+            this.qty = v.is_weighted ? 100 : (v.step ?? 1);
+        },
+
+        weightLabel(g) {
+            if (g >= 1000) return (g / 1000) + ' كيلو';
+            if (g === 500) return '½ كيلو';
+            return g + ' جم';
         },
 
         increment() {
