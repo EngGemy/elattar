@@ -67,7 +67,7 @@ h1,h2,h3,h4,.font-thuluth{
   font-feature-settings:'liga' 1,'calt' 1,'mark' 1;
 }
 p,li,label,.font-naskh{font-family:var(--font-naskh)}
-.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,24px);position:relative;z-index:1}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,24px);position:relative;z-index:1;min-width:0}
 
 /* ── Header ── */
 header.top{
