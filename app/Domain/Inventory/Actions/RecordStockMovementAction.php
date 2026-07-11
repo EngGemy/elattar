@@ -24,8 +24,8 @@ final class RecordStockMovementAction
      * @param float $qtyDelta موجب = دخول، سالب = خروج
      */
     public function execute(
-        int $variantId,
-        int $warehouseId,
+        int|string $variantId,
+        int|string $warehouseId,
         MovementType $type,
         float $qtyDelta,
         int $unitCostMinor = 0,
@@ -37,6 +37,9 @@ final class RecordStockMovementAction
         if ($qtyDelta == 0.0) {
             throw new \InvalidArgumentException('لا يمكن تسجيل حركة بكمية صفر.');
         }
+
+        $variantId = (int) $variantId;
+        $warehouseId = (int) $warehouseId;
 
         return DB::transaction(function () use (
             $variantId, $warehouseId, $type, $qtyDelta,

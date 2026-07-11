@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\DB;
  */
 final class RecalculateAverageCostAction
 {
-    public function execute(int $variantId, float $receivedQty, int $receivedUnitCostMinor): int
+    public function execute(int|string $variantId, float $receivedQty, int $receivedUnitCostMinor): int
     {
+        $variantId = (int) $variantId;
+
         return DB::transaction(function () use ($variantId, $receivedQty, $receivedUnitCostMinor) {
             $variant = ProductVariant::whereKey($variantId)->lockForUpdate()->firstOrFail();
 

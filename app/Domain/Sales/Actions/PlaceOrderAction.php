@@ -41,7 +41,7 @@ final class PlaceOrderAction
      */
     public function execute(
         array $items,
-        int $warehouseId,
+        int|string $warehouseId,
         ?int $customerId = null,
         SalesChannel $channel = SalesChannel::Online,
         ?array $shippingAddress = null,
@@ -53,6 +53,8 @@ final class PlaceOrderAction
         if (empty($items)) {
             throw new InvalidOrderException('لا يمكن إنشاء طلب بدون أصناف.');
         }
+
+        $warehouseId = (int) $warehouseId;
 
         // ── ١) الحماية من التكرار: نفس المفتاح ⟵ نفس الطلب
         if ($idempotencyKey) {

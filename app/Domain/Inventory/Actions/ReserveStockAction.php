@@ -25,10 +25,12 @@ final class ReserveStockAction
     /** @param array<int, array{variant_id:int, qty:float}> $lines */
     public function execute(
         array $lines,
-        int $warehouseId,
+        int|string $warehouseId,
         ?Model $reference = null,
         ?int $ttlMinutes = null,
     ): array {
+        $warehouseId = (int) $warehouseId;
+
         return DB::transaction(function () use ($lines, $warehouseId, $reference, $ttlMinutes) {
             $reservations = [];
 

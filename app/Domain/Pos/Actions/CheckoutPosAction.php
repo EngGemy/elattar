@@ -49,7 +49,7 @@ final class CheckoutPosAction
         return DB::transaction(function () use ($session, $items, $payments, $customerId, $idempotencyKey) {
             $order = $this->placeOrder->execute(
                 items:          $items,
-                warehouseId:    $session->register->warehouse_id,
+                warehouseId:    (int) $session->register->warehouse_id,
                 customerId:     $customerId,
                 channel:        SalesChannel::Pos,
                 idempotencyKey: $idempotencyKey,
@@ -70,7 +70,7 @@ final class CheckoutPosAction
                     method:            PaymentMethod::from($p['method']),
                     amount:            $order->total_minor,
                     tendered:          $tendered,
-                    registerSessionId: $session->id,
+                    registerSessionId: (int) $session->id,
                     reference:         $p['reference'] ?? null,
                 );
             }
