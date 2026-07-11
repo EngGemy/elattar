@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
-use App\Domain\Catalog\Models\ProductVariant;
 use App\Domain\Crm\Models\Customer;
 use App\Domain\Pos\Actions\CheckoutPosAction;
 use App\Domain\Pos\Actions\CloseRegisterSessionAction;
 use App\Domain\Pos\Actions\OpenRegisterSessionAction;
 use App\Domain\Pos\Models\Register;
 use App\Domain\Pos\Models\RegisterSession;
+use App\Domain\Pos\Services\PosCatalogBuilder;
 use App\Domain\Sales\Models\Order;
 use App\Domain\Shared\Enums\SalesChannel;
 use App\Domain\Shared\ValueObjects\Money;
@@ -59,9 +59,8 @@ class PosTerminal extends Page
     {
         $register = Register::where('is_active', true)->first();
 
-        $this->registerSession = $register?->openSession();
-        $this->catalog         = $this->buildCatalog();
-        $this->categories      = $this->buildCategories();
+        $this->registerSession = $register?->openSession()?->loadMissing('register');
+        $this->loadCatalog();
         $this->sessionMeta     = $this->buildSessionMeta();
         $this->pendingOnline   = $this->countPendingOnline();
         $this->pendingOrders   = $this->buildPendingOrders();
@@ -80,118 +79,13 @@ class PosTerminal extends Page
         ];
     }
 
-  /**
-     * منتجات مجمّعة مع متغيّراتها — مثل Odoo/Zoho POS.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function buildCatalog(): array
+    private function loadCatalog(): void
     {
-        $warehouseId = $this->registerSession?->register->warehouse_id ?? 1;
+        $warehouseId = $this->registerSession?->register?->warehouse_id;
 
-        $variants = ProductVariant::query()
-            ->active()
-            ->with(['product.category', 'product.media', 'attributeValues.attribute'])
-            ->whereHas('product', fn ($q) => $q->where('status', 'active'))
-            ->orderBy('product_id')
-            ->get();
-
-        return $variants
-            ->groupBy('product_id')
-            ->map(function ($group) use ($warehouseId) {
-                $product = $group->first()->product;
-
-                $variantRows = $group->map(function (ProductVariant $v) use ($warehouseId) {
-                    try {
-                        $attrs = $v->attributeValues->pluck('value')->implode(' / ');
-                        $listPrice = (int) $v->getRawOriginal('price_minor');
-                        $salePrice = (int) $v->effectivePrice()->minor;
-
-                        return [
-                            'id'          => $v->id,
-                            'full_name'   => $v->full_name,
-                            'label'       => $v->unit_label ?: ($attrs ?: $v->unit->labelAr()),
-                            'attrs'       => $attrs,
-                            'sku'         => $v->sku,
-                            'barcode'     => $v->barcode,
-                            'price'       => $salePrice,
-                            'compare_at'  => $v->isOnSale() ? $listPrice : (int) ($v->getRawOriginal('compare_at_price_minor') ?? 0),
-                            'is_on_sale'  => $v->isOnSale(),
-                            'unit'        => $v->unit->value,
-                            'unit_label'  => $v->unit->labelAr(),
-                            'step'        => (float) $v->step,
-                            'is_weighted' => $v->unit->isFractional(),
-                            'pack_label'  => $v->unit_label,
-                            'available'   => $v->availableAt($warehouseId),
-                            'is_default'  => (bool) $v->is_default,
-                        ];
-                    } catch (\Throwable) {
-                        return null;
-                    }
-                })->filter()->sortByDesc('is_default')->values()->all();
-
-                $default = collect($variantRows)->firstWhere('is_default', true) ?? ($variantRows[0] ?? null);
-
-                if ($variantRows === []) {
-                    return null;
-                }
-
-                return [
-                    'product_id'  => $product->id,
-                    'name'        => $product->name,
-                    'category'    => $product->category?->name ?? 'غير مصنّف',
-                    'category_id' => $product->category_id ?? 0,
-                    'description' => $product->short_description,
-                    'image'       => $this->productImageUrl($product, 'card'),
-                    'thumb'       => $this->productImageUrl($product, 'thumb'),
-                    'is_featured' => (bool) $product->is_featured,
-                    'variant_count' => count($variantRows),
-                    'default_variant_id' => $default['id'] ?? null,
-                    'min_price'   => collect($variantRows)->min('price') ?? 0,
-                    'max_price'   => collect($variantRows)->max('price') ?? 0,
-                    'total_stock' => collect($variantRows)->sum('available'),
-                    'variants'    => $variantRows,
-                ];
-            })
-            ->filter()
-            ->sortByDesc('is_featured')
-            ->sortBy('name')
-            ->values()
-            ->all();
-    }
-
-    private function productImageUrl(\App\Domain\Catalog\Models\Product $product, string $conversion): ?string
-    {
-        try {
-            $url = $product->getFirstMediaUrl('main', $conversion);
-
-            return $url !== '' ? $url : null;
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    /** @return array<int, array<string, mixed>> */
-    private function buildCategories(): array
-    {
-        $counts = collect($this->catalog)->groupBy('category')->map->count();
-
-        $cats = collect($this->catalog)
-            ->pluck('category', 'category_id')
-            ->unique()
-            ->map(fn ($name, $id) => [
-                'id'    => $id,
-                'name'  => $name,
-                'count' => $counts[$name] ?? 0,
-            ])
-            ->sortBy('name')
-            ->values()
-            ->all();
-
-        return array_merge(
-            [['id' => 0, 'name' => 'الكل', 'count' => count($this->catalog)]],
-            $cats
-        );
+        $builder = app(PosCatalogBuilder::class);
+        $this->catalog    = $builder->build($warehouseId);
+        $this->categories = $builder->categoriesFor($this->catalog);
     }
 
     /** @return array<string, mixed> */
@@ -296,18 +190,17 @@ class PosTerminal extends Page
 
     public function refreshCatalog(): void
     {
-        $this->catalog    = $this->buildCatalog();
-        $this->categories = $this->buildCategories();
+        $this->loadCatalog();
     }
 
     public function openSession(int $registerId, float $openingFloat): void
     {
         try {
             $this->registerSession = app(OpenRegisterSessionAction::class)
-                ->execute(Register::findOrFail($registerId), Money::ofMajor($openingFloat));
+                ->execute(Register::findOrFail($registerId), Money::ofMajor($openingFloat))
+                ->loadMissing('register');
 
-            $this->catalog       = $this->buildCatalog();
-            $this->categories    = $this->buildCategories();
+            $this->loadCatalog();
             $this->sessionMeta   = $this->buildSessionMeta();
             $this->pendingOnline = $this->countPendingOnline();
             $this->pendingOrders = $this->buildPendingOrders();

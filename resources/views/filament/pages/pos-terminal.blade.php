@@ -405,7 +405,19 @@
                 <template x-if="filtered.length === 0">
                     <div class="pos-empty">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <p>لا توجد نتائج — جرّب بحثاً أو تصنيفاً آخر</p>
+                        <template x-if="catalog.length === 0">
+                            <div>
+                                <p style="font-weight:700;color:var(--ink);margin-bottom:6px">لا توجد منتجات في الكتالوج</p>
+                                <p style="font-size:.85rem;line-height:1.6;margin-bottom:14px">تأكد من وجود منتجات <strong>نشطة</strong> مع متغيّرات مفعّلة في لوحة التحكم.</p>
+                                <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+                                    <a href="{{ \App\Filament\Resources\ProductResource::getUrl('index') }}" class="pos-chip on" style="text-decoration:none;display:inline-block">إدارة المنتجات</a>
+                                    <button type="button" class="pos-chip" @click="$wire.refreshCatalog()">تحديث الكتالوج</button>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="catalog.length > 0">
+                            <p>لا توجد نتائج — جرّب بحثاً أو تصنيفاً آخر</p>
+                        </template>
                     </div>
                 </template>
             </div>
@@ -662,6 +674,7 @@ function posExpert(catalog, categories, sessionMeta, pendingOnline, pendingOrder
         },
 
         init() {
+            this.syncFromWire();
             this.buildBarcodeIndex();
             this.$refs.search?.focus();
             setInterval(() => {
@@ -675,13 +688,21 @@ function posExpert(catalog, categories, sessionMeta, pendingOnline, pendingOrder
                 this.toast(msg);
             });
             Livewire.hook('message.processed', () => {
-                if (this.$wire.catalog) this.catalog = this.$wire.catalog;
-                if (this.$wire.categories) this.categories = this.$wire.categories;
-                if (this.$wire.sessionMeta) this.session = this.$wire.sessionMeta;
-                if (this.$wire.pendingOrders) this.pendingOrders = this.$wire.pendingOrders;
-                if (this.$wire.pendingOnline !== undefined) this.pendingOnline = this.$wire.pendingOnline;
+                this.syncFromWire();
                 this.buildBarcodeIndex();
             });
+        },
+
+        syncFromWire() {
+            if (Array.isArray(this.$wire.catalog)) {
+                this.catalog = this.$wire.catalog;
+            }
+            if (Array.isArray(this.$wire.categories)) {
+                this.categories = this.$wire.categories;
+            }
+            if (this.$wire.sessionMeta) this.session = this.$wire.sessionMeta;
+            if (this.$wire.pendingOrders) this.pendingOrders = this.$wire.pendingOrders;
+            if (this.$wire.pendingOnline !== undefined) this.pendingOnline = this.$wire.pendingOnline;
         },
 
         buildBarcodeIndex() {
