@@ -46,6 +46,7 @@ html{
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
   text-rendering:optimizeLegibility;
+  overflow-x:hidden;max-width:100%;
 }
 body{
   font-family:var(--font-body);font-weight:400;color:var(--ink);line-height:1.85;
@@ -54,7 +55,7 @@ body{
     radial-gradient(ellipse 90% 50% at 10% -5%,rgba(255,176,32,.12),transparent 50%),
     radial-gradient(ellipse 70% 40% at 95% 10%,rgba(196,92,42,.08),transparent 45%),
     var(--parchment);
-  overflow-x:hidden;min-height:100vh;
+  overflow-x:hidden;min-height:100vh;max-width:100%;
 }
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
@@ -67,7 +68,7 @@ h1,h2,h3,h4,.font-thuluth{
   font-feature-settings:'liga' 1,'calt' 1,'mark' 1;
 }
 p,li,label,.font-naskh{font-family:var(--font-naskh)}
-.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,24px);position:relative;z-index:1;min-width:0}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(12px,4vw,24px);position:relative;z-index:1;min-width:0;width:100%}
 
 /* ── Header ── */
 header.top{
@@ -77,9 +78,9 @@ header.top{
   border-bottom:1px solid var(--hair);
   box-shadow:0 4px 24px -8px rgba(42,24,16,.08);
 }
-.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:70px;height:auto;padding-block:10px;gap:10px}
-.brand{display:flex;align-items:center;gap:11px;font-family:var(--font-ui);font-weight:700;text-decoration:none;min-width:0;flex:1}
-.brand.has-logo{gap:0}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:70px;height:auto;padding-block:10px;gap:8px;min-width:0;overflow:hidden}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--font-ui);font-weight:700;text-decoration:none;min-width:0;flex:1;overflow:hidden}
+.brand.has-logo{gap:0;max-width:calc(100% - 130px)}
 .brand-seal,.brand-logo{width:44px;height:44px;border-radius:50%;flex-shrink:0}
 .brand-logo-wide{
   height:clamp(42px,9vw,56px);width:auto;max-width:min(78vw,340px);
@@ -233,13 +234,15 @@ footer.site-footer a:hover{color:var(--gold-light)}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold-deep)}
 
 @media(max-width:600px){
-  .top .wrap{min-height:60px;padding-block:8px}
-  .brand-logo-wide{height:38px;max-width:min(70vw,260px)}
+  .top .wrap{min-height:56px;padding-block:8px;padding-inline:12px;gap:6px}
+  .brand.has-logo{max-width:calc(100% - 118px)}
+  .brand-logo-wide{height:34px;max-width:100%;width:auto}
   .brand b{font-size:.95rem}
-  .brand-seal,.brand-logo{width:38px;height:38px}
-  .wa-top{padding:7px 10px;font-size:.75rem}
+  .brand-seal,.brand-logo{width:36px;height:36px}
+  .wa-top{padding:7px 9px;font-size:.72rem;gap:0}
   .wa-top span.wa-txt{display:none}
-  .cart-btn{padding:7px 12px;font-size:.78rem}
+  .cart-btn{padding:7px 11px;font-size:.74rem;gap:5px}
+  .cart-btn svg{width:15px;height:15px}
 }
 </style>
 @stack('head-styles')
