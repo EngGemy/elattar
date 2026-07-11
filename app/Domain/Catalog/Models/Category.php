@@ -29,6 +29,7 @@ class Category extends Model implements AuditableContract
         'is_featured' => 'boolean',
         'is_active'   => 'boolean',
         'sort_order'  => 'integer',
+        'depth'       => 'integer',
     ];
 
     public function products(): HasMany

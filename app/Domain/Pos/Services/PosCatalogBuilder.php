@@ -22,9 +22,9 @@ final class PosCatalogBuilder
     public function __construct(private PromotionResolver $promotions) {}
 
     /** @return array<int, array<string, mixed>> */
-    public function build(?int $warehouseId = null): array
+    public function build(int|string|null $warehouseId = null): array
     {
-        $warehouseId ??= $this->defaultWarehouseId();
+        $warehouseId = $this->normalizeWarehouseId($warehouseId) ?? $this->defaultWarehouseId();
 
         $variants = ProductVariant::query()
             ->active()
@@ -167,5 +167,14 @@ final class PosCatalogBuilder
     private function defaultWarehouseId(): int
     {
         return (int) (Warehouse::where('is_default', true)->value('id') ?? 1);
+    }
+
+    private function normalizeWarehouseId(int|string|null $warehouseId): ?int
+    {
+        if ($warehouseId === null || $warehouseId === '') {
+            return null;
+        }
+
+        return (int) $warehouseId;
     }
 }

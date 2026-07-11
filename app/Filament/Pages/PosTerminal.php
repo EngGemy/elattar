@@ -81,7 +81,10 @@ class PosTerminal extends Page
 
     private function loadCatalog(): void
     {
-        $warehouseId = $this->registerSession?->register?->warehouse_id;
+        $rawWarehouseId = $this->registerSession?->register?->warehouse_id;
+        $warehouseId = $rawWarehouseId !== null && $rawWarehouseId !== ''
+            ? (int) $rawWarehouseId
+            : null;
 
         $builder = app(PosCatalogBuilder::class);
         $this->catalog    = $builder->build($warehouseId);
