@@ -8,6 +8,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([AttarSeeder::class]);
+        $this->call([
+            AttarSeeder::class,
+            ExpertCatalogSeeder::class,
+        ]);
     }
 }
