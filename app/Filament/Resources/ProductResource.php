@@ -95,6 +95,11 @@ class ProductResource extends Resource
                     Forms\Components\Repeater::make('variants')
                         ->label('المتغيّرات')
                         ->relationship()
+                        ->mutateRelationshipDataBeforeSaveUsing(function (array $data): array {
+                            unset($data['stock_qty']);
+
+                            return $data;
+                        })
                         ->schema([
                             Forms\Components\Grid::make(3)->schema([
                                 Forms\Components\TextInput::make('sku')
@@ -160,8 +165,8 @@ class ProductResource extends Resource
                                 ->minValue(0)
                                 ->step(0.001)
                                 ->default(0)
-                                ->dehydrated(false)
-                                ->helperText('عدّل الكمية مباشرة من هنا — أو من أمر الشراء عند الاستلام')
+                                ->dehydrated() // يُحفظ في حالة الفورم ثم يُزامن للمخزون بعد الحفظ
+                                ->helperText('غيّر الكمية واحفظ — أو استخدم زر «تعديل الكمية» أعلى الصفحة')
                                 ->visible(fn () => ! auth()->user()?->isCashier())
                                 ->columnSpanFull(),
 

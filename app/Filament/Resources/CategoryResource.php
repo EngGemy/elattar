@@ -26,7 +26,22 @@ class CategoryResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('name')->label('الاسم')->required(),
+            Forms\Components\TextInput::make('name')
+                ->label('الاسم')
+                ->required()
+                ->live(onBlur: true)
+                ->afterStateUpdated(function (?string $state, Forms\Set $set, ?Category $record) {
+                    if (blank($state) || filled($record?->slug)) {
+                        return;
+                    }
+                    $set('slug', Category::makeUniqueSlug($state, $record?->id));
+                }),
+
+            Forms\Components\TextInput::make('slug')
+                ->label('الرابط (Slug)')
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->helperText('يُولَّد تلقائيًا من الاسم — يمكن تعديله'),
 
             Forms\Components\Select::make('parent_id')
                 ->label('التصنيف الأب')

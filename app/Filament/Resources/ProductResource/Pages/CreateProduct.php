@@ -7,24 +7,30 @@ namespace App\Filament\Resources\ProductResource\Pages;
 use App\Domain\Inventory\Actions\SetVariantStockAction;
 use App\Filament\Resources\ProductResource;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
 
-    protected function afterCreate(): void
+    protected function handleRecordCreation(array $data): Model
     {
-        $this->syncVariantStocks();
+        $rawVariants = $this->form->getRawState()['variants'] ?? [];
+
+        $record = parent::handleRecordCreation($data);
+
+        $this->syncVariantStocks($rawVariants);
+
+        return $record;
     }
 
-    private function syncVariantStocks(): void
+    /** @param  array<string, mixed>  $rows */
+    private function syncVariantStocks(array $rows): void
     {
-        /** @var SetVariantStockAction $setter */
         $setter = app(SetVariantStockAction::class);
-        $rows   = $this->data['variants'] ?? [];
 
         foreach ($rows as $row) {
-            if (! array_key_exists('stock_qty', $row)) {
+            if (! is_array($row) || ! array_key_exists('stock_qty', $row)) {
                 continue;
             }
 
@@ -38,10 +44,9 @@ class CreateProduct extends CreateRecord
                 continue;
             }
 
-            $qty = (float) $row['stock_qty'];
             $setter->execute(
                 variant: $variant,
-                targetQty: max(0, $qty),
+                targetQty: max(0, (float) $row['stock_qty']),
                 note: 'رصيد افتتاحي من إنشاء المنتج',
             );
         }
