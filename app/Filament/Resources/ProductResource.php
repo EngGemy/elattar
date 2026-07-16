@@ -151,6 +151,20 @@ class ProductResource extends Resource
                                     ->label('المتغيّر الافتراضي')->default(true),
                             ]),
 
+                            Forms\Components\TextInput::make('stock_qty')
+                                ->label(fn (Forms\Get $get) =>
+                                    in_array($get('unit'), ['gram', 'ml'], true)
+                                        ? 'الكمية بالمخزن (جم / مل)'
+                                        : 'الكمية بالمخزن')
+                                ->numeric()
+                                ->minValue(0)
+                                ->step(0.001)
+                                ->default(0)
+                                ->dehydrated(false)
+                                ->helperText('عدّل الكمية مباشرة من هنا — أو من أمر الشراء عند الاستلام')
+                                ->visible(fn () => ! auth()->user()?->isCashier())
+                                ->columnSpanFull(),
+
                             // مؤشر هامش الربح — يُحسب لحظيًا
                             Forms\Components\Placeholder::make('margin')
                                 ->label('هامش الربح المتوقع')

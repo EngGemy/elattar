@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Domain\Inventory\Actions\SetVariantStockAction;
 use App\Filament\Resources\StockLevelResource\Pages;
 use App\Domain\Inventory\Models\StockLevel;
 use App\Filament\Clusters\InventoryCluster;
+use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -100,6 +103,39 @@ class StockLevelResource extends Resource
                     ->label('مخزون راكد (٩٠ يومًا)')
                     ->query(fn (Builder $q) => $q->where('on_hand', '>', 0)
                         ->where('last_movement_at', '<', now()->subDays(90))),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('set_qty')
+                    ->label('تعديل الكمية')
+                    ->icon('heroicon-o-pencil-square')
+                    ->color('primary')
+                    ->visible(fn () => ! auth()->user()?->isCashier())
+                    ->form(fn (StockLevel $record) => [
+                        Forms\Components\TextInput::make('on_hand')
+                            ->label('الكمية الجديدة (' . $record->variant->unit->labelAr() . ')')
+                            ->numeric()
+                            ->minValue(0)
+                            ->step(0.001)
+                            ->required()
+                            ->default((float) $record->on_hand),
+                        Forms\Components\Textarea::make('note')
+                            ->label('ملاحظة')
+                            ->rows(2)
+                            ->placeholder('سبب التعديل…'),
+                    ])
+                    ->action(function (StockLevel $record, array $data, SetVariantStockAction $setter) {
+                        try {
+                            $setter->execute(
+                                variant: (int) $record->variant_id,
+                                targetQty: (float) $data['on_hand'],
+                                warehouseId: (int) $record->warehouse_id,
+                                note: $data['note'] ?? 'تعديل كمية من أرصدة المخزون',
+                            );
+                            Notification::make()->title('تم تحديث الكمية')->success()->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()->title('فشل التعديل')->body($e->getMessage())->danger()->send();
+                        }
+                    }),
             ])
             ->defaultSort('available');
     }

@@ -87,13 +87,21 @@ class PurchaseOrderResource extends Resource
                                     ->columnSpan(2),
 
                                 Forms\Components\TextInput::make('qty_ordered')
-                                    ->label('الكمية')
+                                    ->label('الكمية المطلوبة')
                                     ->numeric()
                                     ->step(0.001)
                                     ->minValue(0.001)
                                     ->required()
                                     ->default(1)
-                                    ->live(debounce: 300),
+                                    ->live(debounce: 300)
+                                    ->helperText('عدّل الكمية هنا قبل الاستلام'),
+
+                                Forms\Components\TextInput::make('qty_received')
+                                    ->label('المستلم سابقًا')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->visibleOn('edit'),
 
                                 Forms\Components\TextInput::make('unit_cost_minor')
                                     ->label('تكلفة الوحدة')
@@ -120,7 +128,7 @@ class PurchaseOrderResource extends Resource
                                         return Money::ofMajor($qty * $cost)->format();
                                     }),
                             ])
-                            ->columns(5)
+                            ->columns(6)
                             ->defaultItems(1)
                             ->addActionLabel('إضافة صنف')
                             ->reorderable(false)
@@ -216,67 +224,118 @@ class PurchaseOrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label('تعديل')
-                    ->visible(fn (PurchaseOrder $record) => $record->status === 'draft'),
+                    ->visible(fn (PurchaseOrder $record) => in_array($record->status, ['draft', 'sent'], true)
+                        && ! $record->lines->contains(fn ($l) => (float) $l->qty_received > 0)),
 
                 Tables\Actions\Action::make('receive')
                     ->label('استلام بضاعة')
                     ->icon('heroicon-o-inbox-arrow-down')
                     ->color('primary')
-                    ->visible(fn (PurchaseOrder $record) => ! in_array($record->status, ['received', 'cancelled'], true))
+                    ->visible(fn (PurchaseOrder $record) => ! in_array($record->status, ['received', 'cancelled'], true)
+                        && $record->lines->contains(fn ($l) => $l->qtyPending() > 0))
+                    ->fillForm(function (PurchaseOrder $record): array {
+                        $lines = $record->lines
+                            ->filter(fn ($line) => $line->qtyPending() > 0)
+                            ->values()
+                            ->map(fn ($line) => [
+                                'po_line_id'       => $line->id,
+                                'qty'              => $line->qtyPending(),
+                                'unit_cost_minor'  => ((int) $line->getRawOriginal('unit_cost_minor')) / 100,
+                            ])
+                            ->all();
+
+                        return [
+                            'supplier_invoice_no' => null,
+                            'lines'               => $lines,
+                            'note'                => null,
+                        ];
+                    })
                     ->form(fn (PurchaseOrder $record) => [
                         Forms\Components\TextInput::make('supplier_invoice_no')
                             ->label('رقم فاتورة المورد'),
 
                         Forms\Components\Repeater::make('lines')
-                            ->label('الكميات المستلمة')
+                            ->label('الكميات المستلمة — عدّل الكمية حسب الوارد الفعلي')
                             ->schema([
-                                Forms\Components\Select::make('po_line_id')
+                                Forms\Components\Hidden::make('po_line_id')->required(),
+
+                                Forms\Components\Placeholder::make('item_name')
                                     ->label('الصنف')
-                                    ->options($record->lines->mapWithKeys(fn ($line) => [
-                                        $line->id => $line->variant->full_name . " — المتبقي: {$line->qtyPending()}",
-                                    ]))
-                                    ->required()
+                                    ->content(function (Forms\Get $get) use ($record): string {
+                                        $line = $record->lines->firstWhere('id', (int) $get('po_line_id'));
+
+                                        if (! $line) {
+                                            return '—';
+                                        }
+
+                                        return $line->variant->full_name
+                                            . ' — متبقي: ' . number_format($line->qtyPending(), 0);
+                                    })
                                     ->columnSpan(2),
 
                                 Forms\Components\TextInput::make('qty')
                                     ->label('الكمية المستلمة')
                                     ->numeric()
                                     ->step(0.001)
-                                    ->required(),
+                                    ->minValue(0.001)
+                                    ->required()
+                                    ->helperText('يمكن تقليل/تعديل الكمية قبل الاعتماد'),
 
                                 Forms\Components\TextInput::make('unit_cost_minor')
                                     ->label('التكلفة الفعلية (ج.م)')
                                     ->numeric()
                                     ->prefix('ج.م')
-                                    ->helperText('اتركها فارغة لاستخدام تكلفة الأمر')
-                                    ->formatStateUsing(fn ($state) => $state ? $state / 100 : null)
-                                    ->dehydrateStateUsing(fn ($state) => $state ? (int) round((float) $state * 100) : null),
+                                    ->step(0.01)
+                                    ->helperText('اتركها كما هي لاستخدام تكلفة الأمر')
+                                    ->dehydrateStateUsing(fn ($state) => $state !== null && $state !== ''
+                                        ? (int) round((float) $state * 100)
+                                        : null),
                             ])
                             ->columns(4)
-                            ->defaultItems($record->lines->count())
+                            ->addable(false)
+                            ->deletable(false)
+                            ->reorderable(false)
                             ->columnSpanFull(),
 
                         Forms\Components\Textarea::make('note')->label('ملاحظات')->rows(2),
                     ])
                     ->action(function (PurchaseOrder $record, array $data, ReceiveGoodsAction $action) {
                         try {
-                            $lines = array_filter($data['lines'], fn ($line) => ! empty($line['qty']));
+                            $lines = array_values(array_filter(
+                                $data['lines'] ?? [],
+                                fn ($line) => ! empty($line['po_line_id']) && (float) ($line['qty'] ?? 0) > 0
+                            ));
+
+                            if ($lines === []) {
+                                throw new \RuntimeException('حدد كمية مستلمة لصنف واحد على الأقل.');
+                            }
 
                             $receipt = $action->execute(
                                 po: $record,
-                                lines: array_values($lines),
+                                lines: $lines,
                                 supplierInvoiceNo: $data['supplier_invoice_no'] ?? null,
                                 note: $data['note'] ?? null,
                             );
 
                             Notification::make()
                                 ->title("تم الاستلام — إذن {$receipt->number}")
-                                ->body('تم تحديث المخزون وإعادة حساب متوسط التكلفة.')
+                                ->body('تم تحديث كميات المخزون وإعادة حساب متوسط التكلفة.')
                                 ->success()
                                 ->send();
                         } catch (\Throwable $e) {
                             Notification::make()->title('فشل الاستلام')->body($e->getMessage())->danger()->send();
                         }
+                    }),
+
+                Tables\Actions\Action::make('send')
+                    ->label('إرسال للمورد')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('info')
+                    ->visible(fn (PurchaseOrder $record) => $record->status === 'draft')
+                    ->requiresConfirmation()
+                    ->action(function (PurchaseOrder $record) {
+                        $record->update(['status' => 'sent']);
+                        Notification::make()->title('تم تعليم الأمر كمُرسل')->success()->send();
                     }),
 
                 Tables\Actions\Action::make('cancel')
