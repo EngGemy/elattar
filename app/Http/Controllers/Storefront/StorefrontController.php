@@ -160,7 +160,7 @@ class StorefrontController extends Controller
             'unit'               => $default['unit'] ?? 'piece',
             'unit_label'         => $default['unit_label'] ?? 'قطعة',
             'is_weighted'        => $default['is_weighted'] ?? false,
-            'available'          => $default['available'] ?? 0,
+            'in_stock'           => (bool) ($default['in_stock'] ?? false),
             'short_desc'         => $p->short_description,
             'is_featured'        => $p->is_featured,
             'variants'           => $variantRows,
@@ -195,7 +195,8 @@ class StorefrontController extends Controller
             'unit_label'       => $v->unit->labelAr(),
             'step'             => (float) $v->step,
             'is_weighted'      => $v->unit->isFractional(),
-            'available'        => $v->availableAt($warehouseId),
+            // لا نكشف الكمية الفعلية للواجهة — فقط حالة التوفر
+            'in_stock'         => $v->availableAt($warehouseId) > 0,
             'is_default'       => (bool) $v->is_default,
         ];
     }

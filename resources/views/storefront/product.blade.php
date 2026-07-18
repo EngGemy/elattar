@@ -143,10 +143,10 @@
       </div>
 
       {{-- Stock badge --}}
+      {{-- حالة التوفر فقط — بدون كشف الكمية --}}
       <div class="stock-badge"
-           :class="stockStatus === 'out' ? 'out-of-stock' : (stockStatus === 'low' ? 'low-stock' : 'in-stock')">
-        <span x-show="stockStatus === 'in'">● متاح</span>
-        <span x-show="stockStatus === 'low'">⚠ كمية محدودة</span>
+           :class="stockStatus === 'out' ? 'out-of-stock' : 'in-stock'">
+        <span x-show="stockStatus !== 'out'">● متاح</span>
         <span x-show="stockStatus === 'out'">✕ نفد المخزون</span>
       </div>
 
@@ -202,7 +202,6 @@
           <input type="number" class="qty-input" x-model.number="qty"
                  :step="currentVariant?.step ?? 1"
                  :min="currentVariant?.step ?? 1"
-                 :max="currentVariant?.available ?? 999999"
                  @change="snapQty()">
           <span class="qty-unit" x-text="currentVariant?.is_weighted ? 'جم' : (currentVariant?.unit_label ?? '')"></span>
           <button type="button" @click="increment()" class="qty-btn">+</button>
@@ -221,12 +220,12 @@
         <input type="hidden" name="qty" :value="qty">
 
         <button type="submit" class="add-to-cart-btn"
-                :disabled="!currentVariant || currentVariant.available <= 0 || qty <= 0">
+                :disabled="!currentVariant || !currentVariant.in_stock || qty <= 0">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round"
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
-          <span x-text="currentVariant?.available <= 0 ? 'نفد المخزون' : ('أضف للسلة · ' + fmt(lineTotal))"></span>
+          <span x-text="!currentVariant?.in_stock ? 'نفد المخزون' : ('أضف للسلة · ' + fmt(lineTotal))"></span>
         </button>
       </form>
 
@@ -247,10 +246,7 @@ function productPage(variants, defaultVariant) {
         extraQuickWeights: [1000, 25, 1],
 
         get stockStatus() {
-            const av = this.currentVariant?.available ?? 0;
-            if (av <= 0) return 'out';
-            if (av < 5) return 'low';
-            return 'in';
+            return this.currentVariant?.in_stock ? 'in' : 'out';
         },
 
         get lineTotal() {
@@ -287,9 +283,7 @@ function productPage(variants, defaultVariant) {
             const v = this.currentVariant;
             if (!v) return;
             const step = v.step ?? 1;
-            let q = Math.max(step, Math.round(this.qty / step) * step);
-            if (v.available && q > v.available) q = Math.floor(v.available / step) * step || step;
-            this.qty = q;
+            this.qty = Math.max(step, Math.round(this.qty / step) * step);
         },
 
         fmt(minor) {

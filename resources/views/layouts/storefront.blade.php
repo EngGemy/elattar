@@ -374,14 +374,14 @@ function productCard(product) {
         },
 
         get canAdd() {
-            return this.variant && this.variant.available > 0;
+            return this.variant && this.variant.in_stock;
         },
 
         init() {
             const v = this.variant;
             if (v) {
                 this.pieceQty = v.step || 1;
-                this.weightGrams = Math.min(Math.max(v.step || 1, 100), v.available || 100);
+                this.weightGrams = Math.max(v.step || 1, 100);
             }
         },
 
@@ -391,7 +391,7 @@ function productCard(product) {
             const v = this.variant;
             if (v) {
                 this.pieceQty = v.step || 1;
-                this.weightGrams = Math.min(Math.max(v.step || 1, 100), v.available || 100);
+                this.weightGrams = Math.max(v.step || 1, 100);
             }
         },
 
@@ -405,18 +405,14 @@ function productCard(product) {
         snapWeight() {
             const v = this.variant;
             if (!v) return;
-            let g = this.normalizeWeight(this.weightGrams || v.step || 1);
-            if (g > v.available) g = this.normalizeWeight(v.available);
-            this.weightGrams = g;
+            this.weightGrams = this.normalizeWeight(this.weightGrams || v.step || 1);
         },
 
         adjustWeight(delta) {
             const v = this.variant;
             if (!v) return;
             const step = v.step || 1;
-            let g = this.normalizeWeight((this.weightGrams || step) + delta * step);
-            if (g > v.available) g = this.normalizeWeight(v.available);
-            this.weightGrams = Math.max(step, g);
+            this.weightGrams = Math.max(step, this.normalizeWeight((this.weightGrams || step) + delta * step));
         },
 
         priceLabel() {
@@ -459,21 +455,11 @@ function productCard(product) {
         },
 
         stockClass() {
-            const av = this.variant?.available ?? 0;
-            if (av <= 0) return 'no';
-            if (this.variant?.is_weighted ? av < 500 : av < 5) return 'low';
-            return 'ok';
+            return this.variant?.in_stock ? 'ok' : 'no';
         },
 
         stockLabel() {
-            const v = this.variant;
-            if (!v || v.available <= 0) return 'نفد';
-            if (v.is_weighted) {
-                return v.available >= 1000
-                    ? (v.available / 1000).toFixed(1) + ' كجم متوفر'
-                    : v.available + ' جم متوفر';
-            }
-            return Math.floor(v.available) + ' متوفر';
+            return this.variant?.in_stock ? 'متاح' : 'نفد';
         },
 
         orderQty() {
@@ -487,10 +473,6 @@ function productCard(product) {
             if (!this.canAdd || this.loading) return;
             const v = this.variant;
             const qty = this.orderQty();
-            if (qty > v.available) {
-                storeToast('الكمية تتجاوز المتوفر');
-                return;
-            }
             this.loading = true;
             try {
                 const res = await fetch('{{ route('storefront.cart.add') }}', {

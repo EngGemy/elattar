@@ -19,13 +19,16 @@ class CreateProduct extends CreateRecord
 
         $record = parent::handleRecordCreation($data);
 
-        $this->syncVariantStocks($rawVariants);
+        // Filament قد لا يعيّن $this->record بعد — نستخدم الـ model المُرجع مباشرة
+        $this->syncVariantStocks($record, $rawVariants);
 
         return $record;
     }
 
-    /** @param  array<string, mixed>  $rows */
-    private function syncVariantStocks(array $rows): void
+    /**
+     * @param  array<string, mixed>  $rows
+     */
+    private function syncVariantStocks(Model $record, array $rows): void
     {
         $setter = app(SetVariantStockAction::class);
 
@@ -39,7 +42,7 @@ class CreateProduct extends CreateRecord
                 continue;
             }
 
-            $variant = $this->record->variants()->where('sku', $sku)->first();
+            $variant = $record->variants()->where('sku', $sku)->first();
             if (! $variant) {
                 continue;
             }

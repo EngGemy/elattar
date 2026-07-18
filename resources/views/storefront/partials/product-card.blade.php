@@ -10,7 +10,7 @@
         @if(!empty($p['sale_badge']))
             <span class="badge-sale">{{ $p['sale_badge'] }}</span>
         @endif
-        <span class="badge-stock" :class="stockClass()" x-text="stockLabel()"></span>
+        <span class="badge-stock" x-show="!canAdd" x-cloak :class="stockClass()" x-text="stockLabel()"></span>
     </a>
 
     <div class="body">
@@ -37,7 +37,7 @@
                 <template x-for="v in product.variants" :key="v.id">
                     <button type="button" class="weight-chip"
                             :class="selectedVariantId === v.id ? 'sel' : ''"
-                            :disabled="v.available <= 0"
+                            :disabled="!v.in_stock"
                             @click="selectVariant(v.id)"
                             x-text="v.label"></button>
                 </template>
@@ -46,12 +46,12 @@
 
         <div class="card-purchase">
             {{-- أوزان للبهارات --}}
-            <template x-if="variant?.is_weighted && variant?.available > 0">
+            <template x-if="variant?.is_weighted && variant?.in_stock">
                 <div class="weight-panel">
                     <div class="weight-strip">
                         <button type="button" class="weight-step-btn" @click="adjustWeight(-1)" aria-label="تقليل">−</button>
                         <input type="number" class="weight-input" x-model.number="weightGrams"
-                               :min="variant.step || 1" :max="variant.available" :step="variant.step || 1"
+                               :min="variant.step || 1" :step="variant.step || 1"
                                @change="snapWeight()" aria-label="الكمية بالجرام">
                         <span class="weight-unit">جم</span>
                         <button type="button" class="weight-step-btn" @click="adjustWeight(1)" aria-label="زيادة">+</button>
@@ -85,7 +85,7 @@
             </template>
 
             {{-- كمية للقطع --}}
-            <template x-if="variant && !variant.is_weighted && variant.available > 0">
+            <template x-if="variant && !variant.is_weighted && variant.in_stock">
                 <div class="piece-panel">
                     <span class="unit-chip" x-text="variant.label"></span>
                     <div class="weight-strip weight-strip--piece">
@@ -93,7 +93,7 @@
                                 @click="pieceQty = Math.max(variant.step, pieceQty - variant.step)">−</button>
                         <span class="piece-qty" x-text="pieceQty"></span>
                         <button type="button" class="weight-step-btn"
-                                @click="pieceQty = Math.min(variant.available, pieceQty + variant.step)">+</button>
+                                @click="pieceQty = pieceQty + variant.step">+</button>
                         <span class="weight-strip-total" x-text="pieceLineTotal()"></span>
                     </div>
                 </div>

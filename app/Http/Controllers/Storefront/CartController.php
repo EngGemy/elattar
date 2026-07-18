@@ -68,7 +68,7 @@ class CartController extends Controller
         if (isset($cart[$key])) {
             $newQty = $cart[$key]['qty'] + $qty;
             if ($newQty > $available) {
-                return $this->cartResponse($request, false, 'الكمية المطلوبة تتجاوز المتاح.');
+                return $this->cartResponse($request, false, 'الكمية المطلوبة غير متاحة حاليًا.');
             }
             $cart[$key]['qty'] = $newQty;
         } else {
@@ -140,7 +140,7 @@ class CartController extends Controller
 
             $warehouseId = (int) (Warehouse::where('is_default', true)->value('id') ?? 1);
             if ($qty > $variant->availableAt($warehouseId)) {
-                return back()->with('error', 'الكمية تتجاوز المتوفر في المخزون.');
+                return back()->with('error', 'الكمية المطلوبة غير متاحة حاليًا.');
             }
 
             $cart[$key]['qty']              = $qty;
