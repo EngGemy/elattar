@@ -58,7 +58,7 @@ class ProductResource extends Resource
                             ->label('نوع البيع')
                             ->options(ProductType::class)
                             ->default(ProductType::Simple)
-                            ->required()->live()
+                            ->required()
                             ->helperText('«بالوزن» للبهارات والحبوب — «بسيط» للعبوات والقطع'),
 
                         Forms\Components\Select::make('status')
@@ -113,15 +113,25 @@ class ProductResource extends Resource
                                     ->label('وحدة القياس')
                                     ->options(UnitOfMeasure::class)
                                     ->default(UnitOfMeasure::Piece)
-                                    ->required()->live()
-                                    ->afterStateUpdated(fn ($state, Forms\Set $set) =>
-                                        $set('step', UnitOfMeasure::from($state)->defaultStep())),
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set): void {
+                                        $unit = $state instanceof UnitOfMeasure
+                                            ? $state
+                                            : (is_string($state) ? UnitOfMeasure::tryFrom($state) : null);
+
+                                        if ($unit) {
+                                            $set('step', $unit->defaultStep());
+                                        }
+                                    }),
                             ]),
 
                             Forms\Components\Grid::make(3)->schema([
                                 Forms\Components\TextInput::make('price_minor')
                                     ->label(fn (Forms\Get $get) =>
-                                        in_array($get('unit'), ['gram', 'ml']) ? 'سعر الكيلو/اللتر (ج.م)' : 'سعر البيع (ج.م)')
+                                        in_array(self::unitValue($get('unit')), ['gram', 'ml'], true)
+                                            ? 'سعر الكيلو/اللتر (ج.م)'
+                                            : 'سعر البيع (ج.م)')
                                     ->numeric()->required()->prefix('ج.م')
                                     ->formatStateUsing(fn ($state) => FilamentMoney::toMajor($state))
                                     ->dehydrateStateUsing(fn ($state) => FilamentMoney::toMinor($state) ?? 0)
@@ -158,7 +168,7 @@ class ProductResource extends Resource
 
                             Forms\Components\TextInput::make('stock_qty')
                                 ->label(fn (Forms\Get $get) =>
-                                    in_array($get('unit'), ['gram', 'ml'], true)
+                                    in_array(self::unitValue($get('unit')), ['gram', 'ml'], true)
                                         ? 'الكمية بالمخزن (جم / مل)'
                                         : 'الكمية بالمخزن')
                                 ->numeric()
@@ -175,8 +185,8 @@ class ProductResource extends Resource
                                 ->label('هامش الربح المتوقع')
                                 ->visible(fn () => ! auth()->user()?->isCashier())
                                 ->content(function (Forms\Get $get): string {
-                                    $price = FilamentMoney::toMajor($get('price_minor')) ?? 0;
-                                    $cost  = FilamentMoney::toMajor($get('cost_minor')) ?? 0;
+                                    $price = self::moneyMajorFromForm($get('price_minor'));
+                                    $cost  = self::moneyMajorFromForm($get('cost_minor'));
 
                                     if ($price <= 0) {
                                         return '—';
@@ -276,5 +286,32 @@ class ProductResource extends Resource
             'create' => Pages\CreateProduct::route('/create'),
             'edit'   => Pages\EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    private static function unitValue(mixed $unit): ?string
+    {
+        if ($unit instanceof UnitOfMeasure) {
+            return $unit->value;
+        }
+
+        return is_string($unit) ? $unit : null;
+    }
+
+    /** السعر في الفورم: Money عند التعبئة، قروش (int) بعد dehydrate، جنيهات أثناء الكتابة */
+    private static function moneyMajorFromForm(mixed $state): float
+    {
+        if ($state === null || $state === '') {
+            return 0.0;
+        }
+
+        if ($state instanceof \App\Domain\Shared\ValueObjects\Money) {
+            return round($state->minor / 100, 2);
+        }
+
+        if (is_int($state)) {
+            return round($state / 100, 2);
+        }
+
+        return round((float) $state, 2);
     }
 }

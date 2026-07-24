@@ -146,27 +146,74 @@ class PromotionResource extends Resource
                     Forms\Components\Select::make('scope')
                         ->label('نطاق العرض')->required()->live()
                         ->options(PromotionScope::class)
-                        ->default(PromotionScope::Variant),
+                        ->default(PromotionScope::Product)
+                        ->helperText('ابدأ بـ «منتجات محددة» — تجنّب تحميل كل المتغيّرات دفعة واحدة'),
 
                     Forms\Components\Select::make('categories')
                         ->label('التصنيفات')
                         ->relationship('categories', 'name')
-                        ->multiple()->searchable()->preload()
+                        ->multiple()->searchable()
                         ->visible(fn (Get $get) => $get('scope') === PromotionScope::Category->value)
                         ->dehydrated(fn (Get $get) => $get('scope') === PromotionScope::Category->value),
 
                     Forms\Components\Select::make('products')
                         ->label('المنتجات')
                         ->relationship('products', 'name')
-                        ->multiple()->searchable()->preload()
+                        ->multiple()->searchable()
+                        ->getSearchResultsUsing(function (string $search): array {
+                            return \App\Domain\Catalog\Models\Product::query()
+                                ->where(function ($q) use ($search) {
+                                    $q->where('name', 'like', "%{$search}%")
+                                        ->orWhere('sku_root', 'like', "%{$search}%");
+                                })
+                                ->orderBy('name')
+                                ->limit(50)
+                                ->pluck('name', 'id')
+                                ->all();
+                        })
+                        ->getOptionLabelsUsing(fn (array $values): array =>
+                            \App\Domain\Catalog\Models\Product::query()
+                                ->whereIn('id', $values)
+                                ->pluck('name', 'id')
+                                ->all())
                         ->visible(fn (Get $get) => $get('scope') === PromotionScope::Product->value)
                         ->dehydrated(fn (Get $get) => $get('scope') === PromotionScope::Product->value),
 
                     Forms\Components\Select::make('variants')
                         ->label('المتغيّرات')
-                        ->relationship('variants', 'sku')
-                        ->getOptionLabelFromRecordUsing(fn (ProductVariant $record) => $record->full_name)
-                        ->multiple()->searchable()->preload()
+                        ->relationship(
+                            'variants',
+                            'sku',
+                            fn ($query) => $query->with('product')->orderBy('sku'),
+                        )
+                        ->getOptionLabelFromRecordUsing(fn (ProductVariant $record) =>
+                            trim(($record->product?->name ?? '').' — '.$record->sku, ' —'))
+                        ->getSearchResultsUsing(function (string $search): array {
+                            return ProductVariant::query()
+                                ->with('product')
+                                ->where(function ($q) use ($search) {
+                                    $q->where('sku', 'like', "%{$search}%")
+                                        ->orWhereHas('product', fn ($pq) => $pq->where('name', 'like', "%{$search}%"));
+                                })
+                                ->orderBy('sku')
+                                ->limit(40)
+                                ->get()
+                                ->mapWithKeys(fn (ProductVariant $v) => [
+                                    $v->id => trim(($v->product?->name ?? '').' — '.$v->sku, ' —'),
+                                ])
+                                ->all();
+                        })
+                        ->getOptionLabelsUsing(function (array $values): array {
+                            return ProductVariant::query()
+                                ->with('product')
+                                ->whereIn('id', $values)
+                                ->get()
+                                ->mapWithKeys(fn (ProductVariant $v) => [
+                                    $v->id => trim(($v->product?->name ?? '').' — '.$v->sku, ' —'),
+                                ])
+                                ->all();
+                        })
+                        ->multiple()->searchable()
                         ->visible(fn (Get $get) => $get('scope') === PromotionScope::Variant->value)
                         ->dehydrated(fn (Get $get) => $get('scope') === PromotionScope::Variant->value),
                 ]),

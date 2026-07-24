@@ -460,7 +460,7 @@
   </div>
 
   {{-- ══ CATEGORIES SWIPER ══ --}}
-  @if($categories->count())
+@if($categories->count())
   <section style="margin-bottom:56px">
     <div class="sec-head">
       <div>
@@ -477,18 +477,18 @@
             <b>كل المنتجات</b>
           </a>
         </div>
-        @foreach($categories as $cat)
+      @foreach($categories as $cat)
           <div class="swiper-slide">
             <a href="{{ route('storefront.catalog', ['category' => $cat->slug]) }}" class="cat-card">
               <span class="ico">{{ $cat->icon && !str_starts_with($cat->icon, 'heroicon') ? $cat->icon : '🏷' }}</span>
               <b>{{ $cat->name }}</b>
             </a>
           </div>
-        @endforeach
-      </div>
+      @endforeach
     </div>
-  </section>
-  @endif
+  </div>
+</section>
+@endif
 
   {{-- ══ STORY ══ --}}
   <section class="home-story">
@@ -579,7 +579,7 @@
                   @if($promo['description'])<p>{{ $promo['description'] }}</p>@endif
                   @if($promo['show_countdown'] && $promo['days_remaining'] !== null)
                     <p style="font-size:.8rem;opacity:.75">⏳ {{ $promo['days_remaining'] }} أيام متبقية</p>
-                  @endif
+          @endif
                   <a href="{{ route('storefront.offers') }}" class="btn-primary" style="margin-top:8px">تسوّق العرض</a>
                 </div>
               </div>
@@ -588,7 +588,7 @@
         </div>
         <div class="swiper-pagination"></div>
       </div>
-    @endif
+          @endif
 
     @foreach($homePromotions as $promo)
       @if(count($promo['products']))
@@ -659,9 +659,9 @@
         <div class="swiper-button-prev"></div>
         <div class="swiper-button-next"></div>
       </div>
-    </div>
-  </section>
-  @endif
+  </div>
+</section>
+@endif
 
 </div>
 @endsection
