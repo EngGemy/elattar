@@ -59,7 +59,7 @@
 .tl-note{font-size:.82rem;color:var(--ink-soft)}
 
 /* Summary card */
-.order-card{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);padding:24px;position:sticky;top:100px}
+.order-card{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);padding:24px;position:sticky;top:calc(var(--chrome-h) + 16px)}
 .order-card h3{font-family:'Reem Kufi';font-size:1.05rem;font-weight:700;margin-bottom:16px}
 .order-line{display:flex;justify-content:space-between;align-items:start;padding:9px 0;
   border-bottom:1px solid var(--hair);font-size:.88rem;gap:8px}

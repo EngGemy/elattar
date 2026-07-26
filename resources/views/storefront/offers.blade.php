@@ -10,8 +10,8 @@
 .page-hero p{color:var(--ink-soft);margin-top:6px}
 
 .offers-toolbar{
-  position:sticky;top:68px;z-index:40;
-  background:linear-gradient(180deg,rgba(250,246,239,.97),rgba(250,246,239,.9));
+  position:sticky;top:var(--chrome-h);z-index:40;
+  background:linear-gradient(180deg,rgba(246,243,238,.97),rgba(246,243,238,.9));
   backdrop-filter:blur(8px);padding:14px 0 12px;border-bottom:1px solid var(--hair);margin-bottom:24px;
 }
 .offers-search{position:relative;max-width:560px;margin:0 auto 12px;display:flex;gap:10px;align-items:stretch}

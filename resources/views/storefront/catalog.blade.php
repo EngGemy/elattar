@@ -5,7 +5,7 @@
 @push('head-styles')
 <style>
 /* Toolbar */
-.toolbar{position:sticky;top:68px;z-index:40;background:linear-gradient(180deg,rgba(241,233,216,.97),rgba(241,233,216,.9));
+.toolbar{position:sticky;top:var(--chrome-h);z-index:40;background:linear-gradient(180deg,rgba(246,243,238,.97),rgba(246,243,238,.9));
   backdrop-filter:blur(8px);padding:16px 0 12px;border-bottom:1px solid var(--hair);margin-bottom:28px}
 .search-row{display:flex;gap:10px;align-items:stretch;max-width:560px;margin:0 auto 14px}
 .search-box{position:relative;flex:1;min-width:0}

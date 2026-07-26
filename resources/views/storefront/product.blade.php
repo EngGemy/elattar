@@ -14,7 +14,7 @@
 @media(max-width:780px){.product-layout{grid-template-columns:1fr;gap:28px}}
 
 /* Gallery */
-.gallery{position:sticky;top:100px}
+.gallery{position:sticky;top:calc(var(--chrome-h) + 16px)}
 .main-img{width:100%;aspect-ratio:1;border-radius:var(--radius);overflow:hidden;background:var(--parchment-2);
   border:1px solid var(--hair);margin-bottom:12px}
 .main-img img{width:100%;height:100%;object-fit:cover}

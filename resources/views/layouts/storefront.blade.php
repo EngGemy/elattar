@@ -11,29 +11,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Katibeh&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="{{ asset('images/brand-logo.png') }}" type="image/png">
 <style>
-/* ═══ خطوط عطارة مصرية: ثلث (عناوين) + نسخ (نصوص) ═══ */
+/* ═══ مخزن النحاس: ثلث + نسخ + كوفي واجهة ═══ */
 :root{
-  --ink:#1a1410;
-  --ink-soft:#6b5a48;
-  --parchment:#faf6ef;
-  --parchment-2:#f3ebe0;
-  --gold:#d4a85a;
-  --gold-deep:#b8892b;
-  --gold-light:#f0d9a8;
-  --gold-glow:rgba(212,168,90,.45);
-  --saffron:#e8b84a;
-  --terracotta:#c45c2a;
-  --emerald:#3b533d;
-  --emerald-light:#4d6b50;
-  --rose:#d4546a;
-  --clay:#c45c2a;
-  --olive:#3b533d;
-  --night:#0d0a08;
-  --card:#ffffff;
-  --hair:rgba(42,24,16,.1);
-  --shadow:0 22px 55px -22px rgba(42,24,16,.18);
-  --radius:18px;
-  /* Katibeh: خط ثلثي للعناوين — Noto Naskh: نسخ للقراءة */
+  --ink:#14110f;
+  --ink-soft:#5c534a;
+  --parchment:#f6f3ee;
+  --parchment-2:#ebe6de;
+  --gold:#c9922e;
+  --gold-deep:#a6751f;
+  --gold-light:#e8c878;
+  --gold-glow:rgba(201,146,46,.4);
+  --saffron:#d4a43a;
+  --copper:#9a6b2f;
+  --emerald:#2f4a38;
+  --emerald-light:#3d5f48;
+  --clay:#8b3a2a;
+  --olive:#2f4a38;
+  --night:#0c0a08;
+  --card:#fffcf8;
+  --hair:rgba(20,17,15,.1);
+  --shadow:0 20px 50px -24px rgba(12,10,8,.22);
+  --radius:16px;
+  --chrome-h:118px;
   --font-thuluth:'Katibeh','Aref Ruqaa',serif;
   --font-naskh:'Noto Naskh Arabic','Amiri',serif;
   --font-body:var(--font-naskh);
@@ -52,10 +51,11 @@ body{
   font-family:var(--font-body);font-weight:400;color:var(--ink);line-height:1.85;
   font-feature-settings:'liga' 1,'calt' 1;
   background:
-    radial-gradient(ellipse 90% 50% at 10% -5%,rgba(255,176,32,.12),transparent 50%),
-    radial-gradient(ellipse 70% 40% at 95% 10%,rgba(196,92,42,.08),transparent 45%),
+    radial-gradient(ellipse 80% 45% at 100% 0%,rgba(201,146,46,.08),transparent 50%),
+    radial-gradient(ellipse 60% 40% at 0% 20%,rgba(47,74,56,.06),transparent 45%),
     var(--parchment);
   overflow-x:hidden;min-height:100vh;max-width:100%;
+  padding-top:var(--chrome-h);
 }
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
@@ -70,15 +70,30 @@ h1,h2,h3,h4,.font-thuluth{
 p,li,label,.font-naskh{font-family:var(--font-naskh)}
 .wrap{max-width:1200px;margin:0 auto;padding:0 clamp(12px,4vw,24px);position:relative;z-index:1;min-width:0;width:100%}
 
-/* ── Header ── */
-header.top{
-  position:sticky;top:0;z-index:60;
-  backdrop-filter:blur(18px) saturate(1.3);
-  background:rgba(250,246,239,.88);
-  border-bottom:1px solid var(--hair);
-  box-shadow:0 4px 24px -8px rgba(42,24,16,.08);
+/* ── Chrome: header + menu ثابت أثناء التمرير ── */
+.site-chrome{
+  position:fixed;inset-inline:0;top:0;z-index:80;width:100%;
+  transition:box-shadow .3s,background .3s;
 }
-.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:70px;height:auto;padding-block:10px;gap:8px;min-width:0;overflow:hidden}
+.site-chrome.is-scrolled{
+  box-shadow:0 12px 40px -16px rgba(12,10,8,.28);
+}
+header.top{
+  backdrop-filter:blur(20px) saturate(1.25);
+  background:rgba(246,243,238,.92);
+  border-bottom:1px solid transparent;
+  transition:background .3s,min-height .3s,padding .3s;
+}
+.site-chrome.is-scrolled header.top{
+  background:rgba(255,252,248,.96);
+  border-bottom-color:var(--hair);
+}
+.top .wrap{
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:72px;height:auto;padding-block:10px;gap:8px;min-width:0;overflow:hidden;
+  transition:min-height .3s,padding .3s;
+}
+.site-chrome.is-scrolled .top .wrap{min-height:58px;padding-block:6px}
 .brand{display:flex;align-items:center;gap:11px;font-family:var(--font-ui);font-weight:700;text-decoration:none;min-width:0;flex:1;overflow:hidden}
 .brand.has-logo{gap:0;max-width:calc(100% - 130px)}
 .brand-seal,.brand-logo{width:44px;height:44px;border-radius:50%;flex-shrink:0}
@@ -86,47 +101,73 @@ header.top{
   height:clamp(42px,9vw,56px);width:auto;max-width:min(78vw,340px);
   object-fit:contain;object-position:right center;flex-shrink:1;
   filter:drop-shadow(0 6px 18px rgba(13,10,8,.22));
+  transition:height .3s;
 }
+.site-chrome.is-scrolled .brand-logo-wide{height:clamp(34px,7vw,44px)}
 .brand-text{min-width:0}
 .brand-seal{
-  background:linear-gradient(145deg,#fff8e8,#f5d88a);
+  background:linear-gradient(145deg,#2a2218,#14110f);
   display:grid;place-items:center;
-  color:var(--gold-deep);font-size:1.55rem;font-family:var(--font-thuluth);
-  border:2px solid rgba(200,134,10,.35);
-  box-shadow:0 6px 20px -6px rgba(200,134,10,.35);
+  color:var(--gold-light);font-size:1.55rem;font-family:var(--font-thuluth);
+  border:1px solid rgba(201,146,46,.45);
+  box-shadow:0 6px 20px -6px rgba(12,10,8,.35);
 }
-.brand-logo{object-fit:cover;border:2px solid rgba(200,134,10,.3)}
+.brand-logo{object-fit:cover;border:1px solid rgba(201,146,46,.35)}
 .brand > div{min-width:0}
 .brand b{
   display:block;font-size:clamp(1.05rem,2.8vw,1.45rem);color:var(--ink);
   font-family:var(--font-thuluth);line-height:1.35;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(52vw,280px);
 }
-.brand span{display:block;font-size:.68rem;color:var(--gold);font-weight:500;margin-top:3px;font-family:var(--font-naskh)}
+.brand span{display:block;font-size:.68rem;color:var(--copper);font-weight:500;margin-top:3px;font-family:var(--font-naskh)}
 .top-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
 .wa-top{
   display:flex;align-items:center;gap:7px;
-  background:rgba(26,122,74,.1);color:var(--emerald);
-  border:1px solid rgba(26,122,74,.22);
-  padding:9px 16px;border-radius:40px;font-weight:600;font-size:.88rem;
+  background:rgba(47,74,56,.1);color:var(--emerald);
+  border:1px solid rgba(47,74,56,.22);
+  padding:9px 16px;border-radius:12px;font-weight:600;font-size:.88rem;
   font-family:var(--font-ui);
   text-decoration:none;transition:.25s;
 }
-.wa-top:hover{background:rgba(26,122,74,.18);border-color:var(--emerald)}
+.wa-top:hover{background:rgba(47,74,56,.16);border-color:var(--emerald)}
 .wa-top svg{width:17px;height:17px}
 .cart-btn{
   display:flex;align-items:center;gap:7px;cursor:pointer;
-  background:linear-gradient(135deg,var(--gold),var(--saffron));
-  color:#fff;border:none;padding:9px 18px;border-radius:40px;
+  background:linear-gradient(135deg,var(--ink),#2a2218);
+  color:var(--gold-light);border:1px solid rgba(201,146,46,.35);
+  padding:9px 18px;border-radius:12px;
   font-weight:700;font-size:.88rem;font-family:var(--font-ui);
   text-decoration:none;
-  transition:.25s;box-shadow:0 6px 20px -4px rgba(200,134,10,.45);
+  transition:.25s;box-shadow:0 8px 24px -8px rgba(12,10,8,.35);
+  position:relative;
 }
-.cart-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px -4px rgba(200,134,10,.55)}
+.cart-btn:hover{transform:translateY(-1px);border-color:var(--gold);box-shadow:0 12px 28px -8px rgba(12,10,8,.45)}
 .cart-btn .badge{
-  background:#fff;color:var(--gold-deep);
+  background:var(--gold);color:var(--night);
   min-width:20px;height:20px;border-radius:50%;
   display:grid;place-items:center;font-weight:700;font-size:.75rem;padding:0 4px;
+}
+
+/* قائمة التنقل الثابتة تحت الهيدر */
+.site-menu{
+  background:rgba(20,17,15,.94);
+  border-bottom:1px solid rgba(201,146,46,.22);
+  backdrop-filter:blur(12px);
+}
+.site-menu .wrap{
+  display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none;
+  min-height:46px;padding-block:0;-webkit-overflow-scrolling:touch;
+}
+.site-menu .wrap::-webkit-scrollbar{display:none}
+.site-menu a{
+  flex-shrink:0;padding:12px 14px;font-family:var(--font-ui);font-size:.82rem;font-weight:600;
+  color:rgba(246,243,238,.72);letter-spacing:.02em;position:relative;transition:color .2s;
+  white-space:nowrap;
+}
+.site-menu a:hover,.site-menu a.is-active{color:var(--gold-light)}
+.site-menu a.is-active::after{
+  content:'';position:absolute;inset-inline:14px;bottom:6px;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--saffron));border-radius:2px;
 }
 
 /* ── Flash ── */
@@ -150,8 +191,8 @@ header.top{
 .badge-stock.ok{background:#d1fae5;color:#065f46}
 .badge-stock.low{background:#fef3c7;color:#92400e}
 .badge-stock.no{background:var(--clay);color:#fff}
-.badge-sale{position:absolute;bottom:10px;right:10px;background:linear-gradient(135deg,var(--terracotta),#e86830);color:#fff;
-  font-family:var(--font-ui);font-size:.65rem;padding:4px 9px;border-radius:20px;font-weight:700}
+.badge-sale{position:absolute;bottom:10px;right:10px;background:linear-gradient(135deg,var(--copper),var(--gold-deep));color:#fff;
+  font-family:var(--font-ui);font-size:.65rem;padding:4px 9px;border-radius:8px;font-weight:700}
 .card .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1;min-height:0}
 .card-head{min-height:0}
 .card h3{font-family:var(--font-naskh);font-size:.98rem;font-weight:700;line-height:1.45;color:var(--ink);
@@ -217,38 +258,43 @@ footer.site-footer a:hover{color:var(--gold-light)}
 
 /* ── Buttons ── */
 .btn-primary{
-  background:linear-gradient(135deg,var(--gold),var(--saffron));
-  color:#fff;border:none;padding:13px 30px;border-radius:12px;
+  background:linear-gradient(135deg,var(--ink),#2a2218);
+  color:var(--gold-light);border:1px solid rgba(201,146,46,.4);padding:13px 30px;border-radius:12px;
   font-family:var(--font-naskh);font-weight:700;font-size:.96rem;cursor:pointer;transition:.25s;
   display:inline-flex;align-items:center;gap:8px;
-  box-shadow:0 8px 28px -6px rgba(200,134,10,.45);
+  box-shadow:0 10px 28px -8px rgba(12,10,8,.4);
 }
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 36px -6px rgba(200,134,10,.55)}
+.btn-primary:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 14px 36px -6px rgba(12,10,8,.5)}
 .btn-outline{
-  background:#fff;color:var(--ink);
-  border:2px solid var(--hair);
+  background:transparent;color:inherit;
+  border:1.5px solid currentColor;
   padding:11px 26px;border-radius:12px;
   font-family:var(--font-naskh);font-weight:600;font-size:.92rem;cursor:pointer;transition:.25s;
-  display:inline-flex;align-items:center;gap:8px;
+  display:inline-flex;align-items:center;gap:8px;opacity:.9;
 }
-.btn-outline:hover{border-color:var(--gold);color:var(--gold-deep)}
+.btn-outline:hover{opacity:1;border-color:var(--gold);color:var(--gold-deep)}
 
 @media(max-width:600px){
+  :root{--chrome-h:108px}
   .top .wrap{min-height:56px;padding-block:8px;padding-inline:12px;gap:6px}
+  .site-chrome.is-scrolled .top .wrap{min-height:50px}
   .brand.has-logo{max-width:calc(100% - 118px)}
   .brand-logo-wide{height:34px;max-width:100%;width:auto}
+  .site-chrome.is-scrolled .brand-logo-wide{height:30px}
   .brand b{font-size:.95rem}
   .brand-seal,.brand-logo{width:36px;height:36px}
   .wa-top{padding:7px 9px;font-size:.72rem;gap:0}
   .wa-top span.wa-txt{display:none}
   .cart-btn{padding:7px 11px;font-size:.74rem;gap:5px}
   .cart-btn svg{width:15px;height:15px}
+  .site-menu a{padding:10px 12px;font-size:.76rem}
 }
 </style>
 @stack('head-styles')
 </head>
 <body>
 
+<div class="site-chrome" id="site-chrome">
 <header class="top">
   <div class="wrap">
     <a href="{{ route('storefront.home') }}" class="brand @if($shop['logo_url']) has-logo @endif">
@@ -263,7 +309,7 @@ footer.site-footer a:hover{color:var(--gold-light)}
       @endif
     </a>
 
-    <nav class="top-actions">
+    <nav class="top-actions" aria-label="إجراءات سريعة">
       <a href="{{ \App\Support\ShopSettings::whatsappUrl() }}" class="wa-top" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
@@ -271,16 +317,26 @@ footer.site-footer a:hover{color:var(--gold-light)}
         </svg>
         <span class="wa-txt">واتساب</span>
       </a>
-      <a href="{{ route('storefront.cart') }}" class="cart-btn">
+      <a href="{{ route('storefront.cart') }}" class="cart-btn" aria-label="سلة التسوق">
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
         </svg>
-        السلة
+        <span class="cart-txt">السلة</span>
         <span class="badge" id="cart-badge" @if(count(session('storefront_cart', [])) === 0) style="display:none" @endif>{{ count(session('storefront_cart', [])) }}</span>
       </a>
     </nav>
   </div>
 </header>
+
+<nav class="site-menu" aria-label="القائمة الرئيسية">
+  <div class="wrap">
+    <a href="{{ route('storefront.home') }}" @class(['is-active' => request()->routeIs('storefront.home')])>الرئيسية</a>
+    <a href="{{ route('storefront.catalog') }}" @class(['is-active' => request()->routeIs('storefront.catalog') || request()->routeIs('storefront.product')])>المنتجات</a>
+    <a href="{{ route('storefront.offers') }}" @class(['is-active' => request()->routeIs('storefront.offers')])>العروض</a>
+    <a href="{{ route('storefront.track.lookup') }}" @class(['is-active' => request()->routeIs('storefront.track*')])>تتبّع الطلب</a>
+  </div>
+</nav>
+</div>
 
 @if(session('success'))
   <div class="flash flash-success wrap">{{ session('success') }}</div>
@@ -548,6 +604,24 @@ function storeToast(msg) {
     clearTimeout(storeToastTimer);
     storeToastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
+
+(function () {
+    const chrome = document.getElementById('site-chrome');
+    if (!chrome) return;
+
+    const syncChromeHeight = () => {
+        document.documentElement.style.setProperty('--chrome-h', chrome.offsetHeight + 'px');
+    };
+
+    const onScroll = () => {
+        chrome.classList.toggle('is-scrolled', window.scrollY > 12);
+    };
+
+    syncChromeHeight();
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', syncChromeHeight);
+})();
 </script>
 
 @stack('scripts')

@@ -28,7 +28,7 @@
 .cart-d-del{background:none;border:none;color:#bbb;font-size:1.3rem;cursor:pointer;width:32px;height:32px;border-radius:8px}
 .cart-d-del:hover{background:#fee2e2;color:var(--clay)}
 
-.summary-box{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);padding:22px;position:sticky;top:96px}
+.summary-box{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);padding:22px;position:sticky;top:calc(var(--chrome-h) + 16px)}
 .summary-box h3{font-family:var(--font-ui);font-size:1.05rem;font-weight:700;margin-bottom:14px}
 .sum-line{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--hair);font-size:.9rem}
 .sum-line:last-of-type{border-bottom:none}

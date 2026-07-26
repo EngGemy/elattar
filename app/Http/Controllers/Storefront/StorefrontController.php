@@ -251,40 +251,23 @@ class StorefrontController extends Controller
     private function buildHeroSlides(array $shop, Collection $homePromotions, Collection $featured): array
     {
         $slides = [[
-            'theme'     => 'brand',
             'is_brand'  => true,
-            'eyebrow'   => $shop['tagline'],
-            'title'     => $shop['hero_title'],
-            'subtitle'  => $shop['hero_subtitle'],
-            'badge'     => null,
-            'image'     => $shop['logo_url'],
+            'title'     => $shop['hero_title'] ?: $shop['tagline'],
+            'subtitle'  => $shop['hero_subtitle'] ?: $shop['description'],
+            'bg'        => $featured->first()['image'] ?? null,
             'cta'       => route('storefront.catalog'),
             'cta_label' => 'تسوّق الآن',
         ]];
 
-        foreach ($homePromotions as $promo) {
+        foreach ($homePromotions->take(3) as $promo) {
             $slides[] = [
-                'theme'     => 'ember',
-                'eyebrow'   => 'عرض حصري',
+                'is_brand'  => false,
                 'title'     => $promo['name'],
-                'subtitle'  => $promo['description'] ?: 'خصم ' . $promo['discount_label'],
-                'badge'     => $promo['discount_label'],
-                'image'     => $promo['banner'] ?: null,
+                'subtitle'  => $promo['description']
+                    ?: ('خصم '.$promo['discount_label'].' على مختارات '.$shop['name']),
+                'bg'        => $promo['banner'] ?: ($featured->first()['image'] ?? null),
                 'cta'       => route('storefront.offers'),
                 'cta_label' => 'اكتشف العرض',
-            ];
-        }
-
-        foreach ($featured->take(5) as $product) {
-            $slides[] = [
-                'theme'     => 'olive',
-                'eyebrow'   => 'منتج مميّز',
-                'title'     => $product['name'],
-                'subtitle'  => $product['short_desc'] ?: ('يبدأ من ' . $product['price_fmt']),
-                'badge'     => $product['sale_badge'],
-                'image'     => $product['image'] ?: null,
-                'cta'       => route('storefront.product', $product['slug']),
-                'cta_label' => 'اطلب الآن',
             ];
         }
 
