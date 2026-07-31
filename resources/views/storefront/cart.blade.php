@@ -33,7 +33,8 @@
 }
 .app-line.is-busy{opacity:.55;pointer-events:none}
 .app-line img,.app-line .ph{
-  width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--parchment-2);
+  width:72px;height:72px;border-radius:14px;object-fit:contain;object-position:center;
+  background:linear-gradient(165deg,#e8efeb,#d4ddd8);padding:4px;box-sizing:border-box;flex-shrink:0;
 }
 .app-line .ph{display:grid;place-items:center;font-size:1.6rem;color:var(--copper)}
 .app-line-body{min-width:0;display:flex;flex-direction:column;gap:8px}

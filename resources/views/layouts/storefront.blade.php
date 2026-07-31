@@ -68,7 +68,12 @@ h1,h2,h3,h4,.font-thuluth{
   font-feature-settings:'liga' 1,'calt' 1,'mark' 1;
 }
 p,li,label,.font-naskh{font-family:var(--font-naskh)}
-.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(12px,4vw,24px);position:relative;z-index:1;min-width:0;width:100%}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(14px,4vw,28px);position:relative;z-index:1;min-width:0;width:100%}
+@media(max-width:600px){
+  .wrap{padding-inline:14px}
+  .grid{gap:10px}
+  .card.card-product{border-radius:16px}
+}
 
 /* ── Chrome: header + menu ثابت أثناء التمرير ── */
 .site-chrome{
@@ -186,11 +191,19 @@ header.top{
 .card.card-product:active{transform:scale(.98)}
 @media(hover:hover){
   .card.card-product:hover{transform:translateY(-5px);box-shadow:0 22px 44px -20px rgba(11,22,18,.3)}
-  .card.card-product:hover .thumb img{transform:scale(1.08)}
+  .card.card-product:hover .thumb img{transform:scale(1.04)}
 }
-.card .thumb{height:148px;overflow:hidden;background:linear-gradient(160deg,#dfe8e3,#c9d6cf);position:relative;display:block}
+.card .thumb{
+  aspect-ratio:1/1;height:auto;width:100%;overflow:hidden;
+  background:linear-gradient(165deg,#e8efeb 0%,#d4ddd8 100%);
+  position:relative;display:block;
+}
 .card .thumb-link{cursor:pointer}
-.card .thumb img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.card .thumb img{
+  width:100%;height:100%;object-fit:contain;object-position:center;
+  padding:clamp(8px,2.2vw,14px);box-sizing:border-box;
+  transition:transform .7s cubic-bezier(.2,.8,.2,1);
+}
 .card .thumb .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-thuluth);font-size:2.4rem;color:var(--emerald);opacity:.45}
 .badge-cat{
   position:absolute;top:10px;right:10px;background:rgba(11,22,18,.78);color:#fff;
@@ -204,9 +217,9 @@ header.top{
   position:absolute;bottom:10px;right:10px;background:var(--gold);color:var(--night);
   font-family:var(--font-ui);font-size:.65rem;padding:4px 9px;border-radius:8px;font-weight:700
 }
-.card .body{padding:11px 12px 13px;display:flex;flex-direction:column;gap:7px;flex:1;min-height:0}
+.card .body{padding:10px 11px 12px;display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
 .card-head{min-height:0}
-.card h3{font-family:var(--font-ui);font-size:.9rem;font-weight:700;line-height:1.4;color:var(--ink);
+.card h3{font-family:var(--font-ui);font-size:clamp(.78rem,2.8vw,.9rem);font-weight:700;line-height:1.4;color:var(--ink);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card h3 a{color:inherit;text-decoration:none}
 .card .desc{display:none}
@@ -243,8 +256,10 @@ header.top{
 .add-btn.disabled{opacity:.45;cursor:not-allowed}
 
 @media(max-width:400px){
-  .add-btn{font-size:.76rem;padding:10px 8px}
-  .card .thumb{height:132px}
+  .add-btn{font-size:.74rem;padding:9px 7px}
+  .card .body{padding:8px 9px 10px;gap:5px}
+  .weight-chip{padding:5px 8px;font-size:.65rem}
+  .weight-step-btn{width:28px;height:28px}
 }
 
 /* ── Footer ── */
