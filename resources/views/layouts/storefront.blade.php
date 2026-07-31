@@ -356,6 +356,7 @@ footer.site-footer a:hover{color:var(--gold-light)}
 
 @yield('content')
 
+@unless(request()->routeIs(['storefront.cart', 'storefront.checkout', 'storefront.checkout.store']))
 <footer class="site-footer">
   <div class="wrap">
     <div class="foot-inner">
@@ -386,6 +387,7 @@ footer.site-footer a:hover{color:var(--gold-light)}
     </div>
   </div>
 </footer>
+@endunless
 
 <div class="store-toast" id="store-toast">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
