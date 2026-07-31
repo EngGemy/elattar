@@ -11,24 +11,34 @@
 .breadcrumb a:hover{color:var(--emerald)}
 .breadcrumb span{margin:0 6px}
 
-.product-layout{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:12px 0 80px;align-items:start}
-@media(max-width:780px){
-  .product-layout{grid-template-columns:1fr;gap:14px;padding:4px 0 12px}
+.product-layout{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:12px 0 40px;align-items:start}
+@media(max-width:600px){
+  .product-layout{grid-template-columns:1fr;gap:12px;padding:4px 0 8px}
   .breadcrumb{padding:8px 0 4px;font-size:.75rem}
   .product-info h1{font-size:clamp(1.35rem,6vw,1.75rem);margin:4px 0 10px}
   .qty-section{padding:12px;border-radius:16px}
+  .gallery{position:static}
+  .add-to-cart-btn.desk{display:none}
+  .prod-dock{display:flex}
+  body.has-product-dock{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 }
 
 /* Gallery */
 .gallery{position:sticky;top:calc(var(--chrome-h) + 16px)}
-.main-img{width:100%;aspect-ratio:1;border-radius:20px;overflow:hidden;background:linear-gradient(165deg,#e8efeb,#d4ddd8);
-  border:1px solid var(--hair);margin-bottom:12px}
-.main-img img{width:100%;height:100%;object-fit:contain;object-position:center;padding:clamp(10px,3vw,20px);box-sizing:border-box}
+.main-img{
+  width:100%;aspect-ratio:4/3;max-height:min(52svh,420px);
+  border-radius:20px;overflow:hidden;
+  background:linear-gradient(165deg,#e8efeb,#d4ddd8);
+  border:1px solid var(--hair);margin-bottom:12px;
+}
+.main-img img{
+  width:100%;height:100%;object-fit:cover;object-position:center;
+}
 .main-img .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-thuluth);font-size:4rem;color:var(--emerald);opacity:.4}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap}
 .thumb-item{width:56px;height:56px;border-radius:12px;overflow:hidden;border:2px solid transparent;
   cursor:pointer;transition:.18s;background:var(--parchment-2)}
-.thumb-item img{width:100%;height:100%;object-fit:contain;object-position:center;padding:4px;box-sizing:border-box}
+.thumb-item img{width:100%;height:100%;object-fit:cover;object-position:center}
 .thumb-item.active,.thumb-item:hover{border-color:var(--gold)}
 
 .product-info .cat-label{font-family:var(--font-ui);color:var(--emerald);font-size:.78rem;font-weight:700}
@@ -88,12 +98,8 @@
   font-weight:800;font-family:var(--font-ui);font-size:.95rem;cursor:pointer;
 }
 .prod-dock .cta:disabled{opacity:.4}
-@media(max-width:780px){
-  .gallery{position:static}
-  .add-to-cart-btn.desk{display:none}
-  .prod-dock{display:flex}
-  body.has-product-dock .app-tabs{display:none!important}
-  body.has-product-dock{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+@media(min-width:601px){
+  .main-img{aspect-ratio:1;max-height:none}
 }
 </style>
 @endpush
@@ -117,8 +123,8 @@
     $defaultVariant = collect($variants)->firstWhere('is_default', true) ?? collect($variants)->first();
   @endphp
 
-  <div class="product-layout"
-       x-data="productPage(@js($variants->values()->all()), @js($defaultVariant))">
+  <div class="product-page" x-data="productPage(@js($variants->values()->all()), @js($defaultVariant))">
+  <div class="product-layout">
 
     {{-- Gallery --}}
     <div class="gallery">
@@ -127,7 +133,7 @@
           <img :src="activeImage" alt="{{ $product->name }}" id="main-product-img"
                x-init="activeImage = '{{ $mainImage }}'">
         @else
-          <div class="no-img">🌿</div>
+          <div class="no-img">ع</div>
         @endif
       </div>
 
@@ -159,11 +165,10 @@
       </div>
 
       {{-- Stock badge --}}
-      {{-- حالة التوفر فقط — بدون كشف الكمية --}}
       <div class="stock-badge"
            :class="stockStatus === 'out' ? 'out-of-stock' : 'in-stock'">
-        <span x-show="stockStatus !== 'out'">● متاح</span>
-        <span x-show="stockStatus === 'out'">✕ نفد المخزون</span>
+        <span x-show="stockStatus !== 'out'" x-cloak>● متاح</span>
+        <span x-show="stockStatus === 'out'" x-cloak>✕ نفد المخزون</span>
       </div>
 
       {{-- Variants (if more than 1 active variant) --}}
@@ -230,7 +235,7 @@
       </div>
 
       {{-- Add to cart --}}
-      <form action="{{ route('storefront.cart.add') }}" method="POST" @submit.prevent="submitCart($el)" class="prod-add-form">
+      <form action="{{ route('storefront.cart.add') }}" method="POST" @submit.prevent="submitCart($el)" class="prod-add-form" id="prod-add-form">
         @csrf
         <input type="hidden" name="variant_id" :value="currentVariant?.id">
         <input type="hidden" name="qty" :value="qty">
@@ -248,15 +253,16 @@
     </div>
   </div>
 
-  <div class="prod-dock">
+  <div class="prod-dock" aria-label="إضافة للسلة">
     <div class="tot">
       <small>الإجمالي</small>
       <strong x-text="fmt(lineTotal)"></strong>
     </div>
-    <button type="submit" form="" class="cta"
-            @click="document.querySelector('.prod-add-form')?.requestSubmit()"
+    <button type="button" class="cta"
+            @click="document.getElementById('prod-add-form')?.requestSubmit()"
             :disabled="!currentVariant || !currentVariant.in_stock || qty <= 0"
-            x-text="!currentVariant?.in_stock ? 'نفد' : 'أضف للسلة'"></button>
+            x-text="!currentVariant?.in_stock ? 'نفد المخزون' : 'أضف للسلة'"></button>
+  </div>
   </div>
 </div>
 

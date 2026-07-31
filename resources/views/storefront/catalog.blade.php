@@ -60,7 +60,7 @@
 
 .cat-grid{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
-  padding:10px 14px 24px;
+  padding:10px 14px 32px;
 }
 @media(min-width:720px){
   .cat-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding-inline:20px}

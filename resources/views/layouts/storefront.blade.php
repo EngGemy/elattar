@@ -200,8 +200,7 @@ header.top{
 }
 .card .thumb-link{cursor:pointer}
 .card .thumb img{
-  width:100%;height:100%;object-fit:contain;object-position:center;
-  padding:clamp(8px,2.2vw,14px);box-sizing:border-box;
+  width:100%;height:100%;object-fit:cover;object-position:center;
   transition:transform .7s cubic-bezier(.2,.8,.2,1);
 }
 .card .thumb .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-thuluth);font-size:2.4rem;color:var(--emerald);opacity:.45}
@@ -297,7 +296,6 @@ footer.site-footer a:hover{color:var(--gold-light)}
 @media(max-width:600px){
   :root{--chrome-h:64px}
   .site-menu{display:none}
-  footer.site-footer{display:none}
   .top .wrap{min-height:56px;padding-block:8px;padding-inline:12px;gap:6px}
   .site-chrome.is-scrolled .top .wrap{min-height:50px}
   .brand.has-logo{max-width:calc(100% - 118px)}
@@ -312,6 +310,12 @@ footer.site-footer a:hover{color:var(--gold-light)}
   .cart-btn .cart-txt{display:none}
   body:not(.has-dock):not(.has-product-dock){padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
   .app-tabs{display:flex}
+  footer.site-footer{
+    display:block;padding:36px 0 88px;margin-top:12px;
+  }
+  footer.site-footer .foot-inner{gap:22px;flex-direction:column;margin-bottom:22px}
+  footer.site-footer h4{margin-bottom:8px;font-size:.85rem}
+  footer.site-footer p,footer.site-footer a{font-size:.82rem;line-height:1.7}
 }
 .app-tabs{
   display:none;position:fixed;inset-inline:0;bottom:0;z-index:85;
