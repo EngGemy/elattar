@@ -326,7 +326,6 @@ footer.site-footer a:hover{color:var(--gold-light)}
 }
 body.has-dock .app-tabs{display:none!important}
 body.has-product-dock .app-tabs{display:none!important}
-body.has-product-dock footer.site-footer{display:none}
 .app-tabs a{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   padding:8px 4px;border-radius:12px;text-decoration:none;
