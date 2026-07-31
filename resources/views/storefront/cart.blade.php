@@ -89,10 +89,10 @@
 
 .app-dock{
   position:fixed;inset-inline:0;bottom:0;z-index:90;
-  background:#fffcf8;
+  background:#ffffff;
   border-top:1px solid var(--hair);
   padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
-  box-shadow:0 -12px 40px -12px rgba(12,10,8,.28);
+  box-shadow:0 -12px 40px -12px rgba(11,22,18,.28);
 }
 .app-dock-inner{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
 .app-dock .tot{flex-shrink:0}

@@ -4,7 +4,7 @@
         @if($p['image'])
             <img src="{{ $p['image'] }}" alt="{{ $p['name'] }}" loading="lazy">
         @else
-            <div class="no-img">🫙</div>
+            <div class="no-img">ع</div>
         @endif
         <span class="badge-cat">{{ $p['category'] }}</span>
         @if(!empty($p['sale_badge']))
