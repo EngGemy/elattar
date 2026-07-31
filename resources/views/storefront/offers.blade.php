@@ -1,71 +1,61 @@
 @extends('layouts.storefront')
 
-@section('title', 'العروض — عبد القادر العطّار')
+@section('title', 'العروض — ' . $shop['name'])
 
 @push('head-styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 <style>
-.page-hero{text-align:center;padding:36px 0 10px}
-.page-hero h1{font-family:var(--font-thuluth);font-size:clamp(1.8rem,4vw,2.6rem);font-weight:400}
-.page-hero p{color:var(--ink-soft);margin-top:6px}
+.off-app{max-width:720px;margin:0 auto;padding-bottom:28px}
+.off-head{padding:18px 16px 8px}
+.off-head h1{font-family:var(--font-thuluth);font-size:1.6rem;font-weight:700}
+.off-head p{color:var(--ink-soft);font-size:.88rem;margin-top:4px}
 
-.offers-toolbar{
-  position:sticky;top:var(--chrome-h);z-index:40;
-  background:linear-gradient(180deg,rgba(246,243,238,.97),rgba(246,243,238,.9));
-  backdrop-filter:blur(8px);padding:14px 0 12px;border-bottom:1px solid var(--hair);margin-bottom:24px;
+.off-sticky{
+  position:sticky;top:var(--chrome-h);z-index:45;
+  background:rgba(238,241,238,.96);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--hair);padding:10px 0;
 }
-.offers-search{position:relative;max-width:560px;margin:0 auto 12px;display:flex;gap:10px;align-items:stretch}
-.offers-search-field{position:relative;flex:1;min-width:0}
-.offers-search input{
-  width:100%;background:var(--card);border:1.5px solid var(--hair);border-radius:40px;
-  padding:11px 44px 11px 16px;font-size:.95rem;color:var(--ink);outline:none;transition:.18s;
+.off-search{display:flex;gap:8px;padding:0 16px 8px}
+.off-search .box{position:relative;flex:1}
+.off-search input{
+  width:100%;height:44px;border:1.5px solid var(--hair);border-radius:14px;
+  padding:0 40px 0 12px;font-size:16px;background:var(--card);outline:none;font-family:var(--font-ui);
 }
-.offers-search input:focus{border-color:var(--gold)}
-.offers-search-field svg{
-  position:absolute;right:14px;top:50%;transform:translateY(-50%);
-  width:18px;height:18px;color:var(--ink-soft);pointer-events:none;z-index:1;
+.off-search svg{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--ink-soft)}
+.off-search button{height:44px;padding:0 14px;border:none;border-radius:14px;background:var(--emerald);color:#fff;font-weight:700;font-family:var(--font-ui);font-size:.82rem}
+.off-scroll{display:flex;gap:8px;overflow-x:auto;padding:0 16px;scrollbar-width:none;scroll-snap-type:x mandatory}
+.off-scroll::-webkit-scrollbar{display:none}
+.off-chip{
+  flex:0 0 auto;scroll-snap-align:start;padding:8px 14px;border-radius:999px;
+  border:1px solid var(--hair);background:var(--card);font-family:var(--font-ui);font-size:.78rem;font-weight:600;color:var(--ink-soft);cursor:pointer;
 }
-.offers-search-btn{
-  flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--saffron));color:#fff;border:none;
-  padding:0 20px;border-radius:40px;font-family:var(--font-naskh);font-weight:700;font-size:.88rem;cursor:pointer;
-  box-shadow:0 6px 18px -6px rgba(200,134,10,.4);white-space:nowrap;
-}
-.offers-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
-.offers-chip{
-  background:var(--parchment-2);border:1px solid var(--hair);color:var(--ink-soft);
-  padding:6px 14px;border-radius:30px;cursor:pointer;font-weight:600;font-size:.82rem;
-  transition:.15s;white-space:nowrap;font-family:var(--font-ui);
-}
-.offers-chip:hover{border-color:var(--gold)}
-.offers-chip.active{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
+.off-chip.on{background:var(--night);color:var(--gold-light);border-color:transparent}
 
-.offer-block{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);
-  padding:24px;margin-bottom:32px;box-shadow:0 12px 30px -20px rgba(36,26,17,.35)}
-.offer-banner{height:180px;border-radius:14px;background-size:cover;background-position:center;margin-bottom:18px}
-.offer-head{display:flex;justify-content:space-between;align-items:start;gap:16px;margin-bottom:20px;flex-wrap:wrap}
-.offer-head h2{font-family:var(--font-thuluth);font-size:1.6rem;font-weight:400}
-.offer-head p{color:var(--ink-soft);font-size:.92rem;margin-top:6px;max-width:600px;line-height:1.6}
-.offer-meta{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-.offer-discount{background:var(--clay);color:#fff;padding:7px 16px;border-radius:20px;font-weight:700}
-.offer-countdown{background:#fef3c7;color:#92400e;padding:6px 12px;border-radius:20px;font-size:.82rem;font-weight:600}
+.off-hero-wrap{margin:14px 16px 6px;border-radius:22px;overflow:hidden;box-shadow:0 16px 40px -20px rgba(11,22,18,.4)}
+.off-hero{
+  position:relative;min-height:168px;background:var(--night);color:#eef1ee;
+}
+.off-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4}
+.off-hero .veil{position:absolute;inset:0;background:linear-gradient(120deg,rgba(11,22,18,.92),rgba(11,22,18,.35))}
+.off-hero .body{position:relative;z-index:1;padding:22px;min-height:168px;display:flex;flex-direction:column;justify-content:flex-end}
+.off-hero .tag{font-family:var(--font-ui);font-size:.72rem;color:var(--gold);font-weight:700;margin-bottom:6px}
+.off-hero h2{font-family:var(--font-thuluth);font-size:1.4rem;font-weight:700;margin-bottom:6px}
+.off-hero p{font-size:.84rem;opacity:.8;line-height:1.6}
+.off-hero-wrap .swiper-pagination{bottom:10px!important}
+.off-hero-wrap .swiper-pagination-bullet{background:rgba(238,241,238,.4);opacity:1}
+.off-hero-wrap .swiper-pagination-bullet-active{background:var(--gold);width:18px;border-radius:6px}
 
-.offer-prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
-.offer-prod-swiper-wrap{display:none;position:relative;padding:0 4px 8px}
-.offer-prod-swiper .swiper-slide{width:min(78vw,260px);height:auto}
-.offer-prod-swiper .card .thumb{height:140px}
+.off-block{padding:8px 16px 20px}
+.off-block-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}
+.off-block-title h3{font-family:var(--font-thuluth);font-size:1.25rem;font-weight:700}
+.off-block-title span{font-family:var(--font-ui);font-size:.75rem;color:var(--emerald);font-weight:700}
+
+.off-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:720px){.off-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}}
 .offer-prod-item[hidden]{display:none!important}
-.offers-empty{text-align:center;padding:28px 16px;color:var(--ink-soft);font-size:.9rem}
 
-.empty-offers{text-align:center;padding:60px 20px;color:var(--ink-soft)}
-
-@media(max-width:768px){
-  .offer-block{padding:16px;margin-bottom:20px}
-  .offer-banner{height:140px}
-  .offer-head{margin-bottom:14px}
-  .offer-prod-grid{display:none}
-  .offer-prod-swiper-wrap{display:block;padding:0 4px}
-  .offers-toolbar{top:60px}
-}
+.off-empty{text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:.9rem}
+.off-none{text-align:center;padding:48px 20px;margin:16px;background:var(--card);border-radius:20px;border:1px dashed var(--hair);color:var(--ink-soft)}
 </style>
 @endpush
 
@@ -85,123 +75,91 @@
   })->all();
 @endphp
 
-<div x-data="homeOffersFilter(@js($promoProductsMap))">
-  <div class="wrap">
-    <div class="page-hero">
-      <h1>عروض العطّار</h1>
-      <p>خصومات حصرية على أجود البهارات والمنتجات</p>
-    </div>
+<div class="off-app" x-data="homeOffersFilter(@js($promoProductsMap))">
+  <div class="off-head">
+    <h1>العروض</h1>
+    <p>خصومات لفترة محدودة على مختارات العطّار</p>
   </div>
 
   @if(count($promotions))
-  <div class="offers-toolbar">
-    <div class="wrap">
-      <div class="offers-search">
-        <div class="offers-search-field">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-          <input type="search" x-model="query" @input.debounce.200ms="applyFilter()" @keydown.enter.prevent="applyFilter()"
-                 placeholder="ابحث في منتجات العروض…" autocomplete="off">
-        </div>
-        <button type="button" class="offers-search-btn" @click="applyFilter()">بحث</button>
+  <div class="off-sticky">
+    <div class="off-search">
+      <div class="box">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="search" x-model="query" @input.debounce.200ms="applyFilter()" placeholder="ابحث في العروض…">
       </div>
-      <div class="offers-filters">
-        <button type="button" class="offers-chip" :class="category === '' && 'active'" @click="setCategory('')">الكل</button>
-        @foreach($offerProductCategories as $oc)
-          <button type="button" class="offers-chip"
-                  :class="category === '{{ $oc['category_slug'] }}' && 'active'"
-                  @click="setCategory('{{ $oc['category_slug'] }}')">
-            {{ $oc['category'] }}
-          </button>
-        @endforeach
-      </div>
+      <button type="button" @click="applyFilter()">بحث</button>
     </div>
-  </div>
-  @endif
-
-  <div class="wrap">
-
-  @forelse($promotions as $promo)
-  <div class="offer-block" id="offer-{{ $promo['slug'] }}" x-show="promoHasVisible('{{ $promo['slug'] }}')" x-cloak>
-    @if($promo['banner'])
-      <div class="offer-banner" style="background-image:url('{{ $promo['banner'] }}')"></div>
-    @endif
-
-    <div class="offer-head">
-      <div>
-        <h2>{{ $promo['name'] }}</h2>
-        @if($promo['description'])
-          <p>{{ $promo['description'] }}</p>
-        @endif
-      </div>
-      <div class="offer-meta">
-        @if($promo['badge_text'])
-          <span class="offer-discount">{{ $promo['badge_text'] }}</span>
-        @else
-          <span class="offer-discount">{{ $promo['discount_label'] }}</span>
-        @endif
-        @if($promo['show_countdown'] && $promo['days_remaining'] !== null)
-          <span class="offer-countdown">⏳ ينتهي خلال {{ $promo['days_remaining'] }} أيام</span>
-        @endif
-      </div>
-    </div>
-
-    @if(count($promo['products']))
-    <div class="offer-prod-grid">
-      @foreach($promo['products'] as $p)
-        <div class="offer-prod-item"
-             data-promo="{{ $promo['slug'] }}"
-             data-name="{{ $p['name'] }}"
-             data-category="{{ $p['category_slug'] ?? '' }}"
-             :hidden="!matches(@js(['name' => $p['name'], 'category_slug' => $p['category_slug'] ?? '']))">
-          @include('storefront.partials.product-card', ['p' => $p])
-        </div>
+    <div class="off-scroll">
+      <button type="button" class="off-chip" :class="category === '' && 'on'" @click="setCategory('')">الكل</button>
+      @foreach($offerProductCategories as $oc)
+        <button type="button" class="off-chip" :class="category === '{{ $oc['category_slug'] }}' && 'on'" @click="setCategory('{{ $oc['category_slug'] }}')">{{ $oc['category'] }}</button>
       @endforeach
     </div>
-    <div class="offer-prod-swiper-wrap">
-      <div class="swiper offer-prod-swiper" data-promo="{{ $promo['slug'] }}">
-        <div class="swiper-wrapper">
-          @foreach($promo['products'] as $p)
-            <div class="swiper-slide offer-prod-item"
-                 data-promo="{{ $promo['slug'] }}"
-                 data-name="{{ $p['name'] }}"
-                 data-category="{{ $p['category_slug'] ?? '' }}"
-                 :hidden="!matches(@js(['name' => $p['name'], 'category_slug' => $p['category_slug'] ?? '']))">
-              @include('storefront.partials.product-card', ['p' => $p])
+  </div>
+
+  <div class="off-hero-wrap">
+    <div class="swiper" id="off-hero-swiper">
+      <div class="swiper-wrapper">
+        @foreach($promotions as $promo)
+        <div class="swiper-slide">
+          <div class="off-hero">
+            @if($promo['banner'])<img src="{{ $promo['banner'] }}" alt="" loading="lazy">@endif
+            <div class="veil"></div>
+            <div class="body">
+              <div class="tag">{{ $promo['discount_label'] }}</div>
+              <h2>{{ $promo['name'] }}</h2>
+              @if($promo['description'])<p>{{ \Illuminate\Support\Str::limit($promo['description'], 100) }}</p>@endif
             </div>
-          @endforeach
+          </div>
         </div>
+        @endforeach
       </div>
+      @if(count($promotions) > 1)
+      <div class="swiper-pagination"></div>
+      @endif
     </div>
-    <div class="offers-empty" x-show="!promoHasVisible('{{ $promo['slug'] }}')">
-      لا توجد منتجات مطابقة في هذا العرض.
+  </div>
+
+  @foreach($promotions as $promo)
+    @if(count($promo['products']))
+    <div class="off-block" x-show="promoHasVisible('{{ $promo['slug'] }}')" x-cloak>
+      <div class="off-block-title">
+        <h3>{{ $promo['name'] }}</h3>
+        <span>{{ $promo['discount_label'] }}</span>
+      </div>
+      <div class="off-grid">
+        @foreach($promo['products'] as $p)
+          <div class="offer-prod-item"
+               data-promo="{{ $promo['slug'] }}"
+               :hidden="!matches(@js(['name' => $p['name'], 'category_slug' => $p['category_slug'] ?? '']))">
+            @include('storefront.partials.product-card', ['p' => $p])
+          </div>
+        @endforeach
+      </div>
+      <div class="off-empty" x-show="!promoHasVisible('{{ $promo['slug'] }}')">لا توجد منتجات مطابقة في هذا العرض.</div>
     </div>
-    @else
-    <p class="empty-offers">لا توجد منتجات في هذا العرض حاليًا.</p>
     @endif
-  </div>
-  @empty
-  <div class="empty-offers">
-    <p>لا توجد عروض نشطة في الوقت الحالي.</p>
-    <a href="{{ route('storefront.catalog') }}" class="btn-outline" style="margin-top:16px;display:inline-flex">تصفّح المنتجات</a>
-  </div>
-  @endforelse
-  </div>
+  @endforeach
+  @else
+    <div class="off-none">
+      <p>لا توجد عروض حالياً — تصفّح المنتجات كاملة.</p>
+      <a href="{{ route('storefront.catalog') }}" class="btn-primary" style="margin-top:14px;display:inline-flex">المنتجات</a>
+    </div>
+  @endif
 </div>
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.offer-prod-swiper').forEach((el) => {
-    el._swiper = new Swiper(el, {
-      slidesPerView: 'auto',
-      spaceBetween: 14,
-      grabCursor: true,
-      freeMode: true,
-    });
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('off-hero-swiper');
+  if (!el || typeof Swiper === 'undefined') return;
+  new Swiper(el, {
+    loop: el.querySelectorAll('.swiper-slide').length > 1,
+    autoplay: { delay: 4200, disableOnInteraction: false },
+    pagination: { el: el.querySelector('.swiper-pagination'), clickable: true },
   });
 });
 </script>

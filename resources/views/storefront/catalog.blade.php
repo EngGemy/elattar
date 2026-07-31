@@ -1,135 +1,176 @@
 @extends('layouts.storefront')
 
-@section('title', 'المنتجات — عبد القادر العطّار')
+@section('title', 'المنتجات — ' . $shop['name'])
 
 @push('head-styles')
 <style>
-/* Toolbar */
-.toolbar{position:sticky;top:var(--chrome-h);z-index:40;background:linear-gradient(180deg,rgba(238,241,238,.97),rgba(238,241,238,.92));
-  backdrop-filter:blur(8px);padding:16px 0 12px;border-bottom:1px solid var(--hair);margin-bottom:28px}
-.search-row{display:flex;gap:10px;align-items:stretch;max-width:560px;margin:0 auto 14px}
-.search-box{position:relative;flex:1;min-width:0}
-.search-box input{width:100%;background:var(--card);border:1.5px solid var(--hair);border-radius:40px;
-  padding:12px 46px 12px 18px;font-size:1rem;color:var(--ink);outline:none;transition:.18s;font-family:var(--font-naskh)}
-.search-box input:focus{border-color:var(--gold)}
-.search-box svg{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--ink-soft);pointer-events:none;z-index:1}
-.search-btn{
-  flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--saffron));color:#fff;border:none;
-  padding:0 22px;border-radius:40px;font-family:var(--font-naskh);font-weight:700;font-size:.92rem;cursor:pointer;
-  box-shadow:0 6px 20px -6px rgba(200,134,10,.4);transition:.2s;white-space:nowrap;
+/* ══ Catalog — mobile app ══ */
+.cat-app{max-width:720px;margin:0 auto;padding-bottom:24px}
+
+.cat-sticky{
+  position:sticky;top:var(--chrome-h);z-index:45;
+  background:rgba(238,241,238,.96);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--hair);
+  padding:10px 0 8px;
 }
-.search-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px -6px rgba(200,134,10,.5)}
-.filters{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;align-items:center}
-.chip{background:var(--parchment-2);border:1px solid var(--hair);color:var(--ink-soft);padding:7px 18px;
-  border-radius:30px;cursor:pointer;font-weight:600;font-size:.9rem;transition:.15s;white-space:nowrap;text-decoration:none;
-  font-family:var(--font-naskh)}
-.chip:hover{border-color:var(--gold)}
-.chip.active{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
-.sort-sel{background:var(--card);border:1.5px solid var(--hair);border-radius:30px;padding:7px 14px;
-  font-size:.88rem;font-weight:600;color:var(--ink);outline:none;cursor:pointer}
+.cat-search{
+  display:flex;gap:8px;align-items:stretch;padding:0 16px 10px;
+}
+.cat-search .box{position:relative;flex:1;min-width:0}
+.cat-search input{
+  width:100%;height:46px;border:1.5px solid var(--hair);border-radius:14px;
+  padding:0 42px 0 14px;font-size:16px;background:var(--card);outline:none;
+  font-family:var(--font-ui);
+}
+.cat-search input:focus{border-color:var(--gold)}
+.cat-search svg{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;color:var(--ink-soft);pointer-events:none;
+}
+.cat-search button{
+  height:46px;padding:0 16px;border:none;border-radius:14px;
+  background:var(--emerald);color:#fff;font-family:var(--font-ui);font-weight:700;font-size:.85rem;
+}
 
-/* Grid */
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-bottom:16px}
-@media(min-width:720px){.grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}}
-.badge-stock{position:absolute;top:10px;left:10px;font-family:var(--font-ui);font-size:.68rem;padding:3px 9px;border-radius:20px;font-weight:600}
-.badge-stock.ok{background:#d1fae5;color:#065f46}
-.badge-stock.low{background:#fef3c7;color:#92400e}
-.badge-stock.no{background:var(--clay);color:#fff}
-.badge-sale{position:absolute;bottom:10px;right:10px;background:var(--clay);color:#fff;
-  font-family:var(--font-ui);font-size:.68rem;padding:4px 10px;border-radius:20px;font-weight:700}
-.card .price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.price-compare{color:var(--ink-soft);font-weight:500;font-size:.88rem;text-decoration:line-through;opacity:.75}
-.unit-row{display:flex;gap:6px;flex-wrap:wrap}
-.unit-opt{flex:1;min-width:58px;text-align:center;border:1px solid var(--hair);background:var(--parchment);
-  border-radius:9px;padding:6px 3px;cursor:pointer;font-weight:600;font-size:.78rem;color:var(--ink-soft);transition:.15s}
-.unit-opt small{display:block;font-size:.65rem;color:var(--gold-deep);font-weight:400;margin-top:2px}
-.unit-opt.sel{background:var(--olive);color:#fff;border-color:var(--olive)}
-.unit-opt.sel small{color:#eef0dd}
-.unit-opt:disabled{opacity:.4;cursor:not-allowed}
-.qty-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.unit-chip{font-size:.8rem;font-weight:600;color:var(--ink-soft)}
-.stepper{display:flex;align-items:center;gap:6px}
-.stepper button{width:28px;height:28px;border-radius:8px;border:1px solid var(--hair);background:var(--parchment);cursor:pointer;font-weight:700}
-.stepper span{min-width:24px;text-align:center;font-weight:700}
-.add-btn{background:var(--ink);color:var(--parchment);border:none;padding:9px;border-radius:11px;
-  cursor:pointer;font-weight:600;font-size:.9rem;width:100%;transition:.2s;margin-top:auto}
-.add-btn .add-btn-inner{display:flex;align-items:center;justify-content:center;gap:6px}
-.add-btn:hover:not(:disabled){background:var(--gold-deep)}
-.add-btn.added{background:var(--olive)}
-.add-btn.disabled{opacity:.45;cursor:not-allowed}
+.cat-scroll{
+  display:flex;gap:8px;overflow-x:auto;padding:0 16px 8px;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-chip{
+  scroll-snap-align:start;flex:0 0 auto;
+  padding:9px 14px;border-radius:999px;border:1px solid var(--hair);
+  background:var(--card);color:var(--ink-soft);font-family:var(--font-ui);
+  font-size:.8rem;font-weight:600;text-decoration:none;white-space:nowrap;
+  transition:transform .2s,background .2s,color .2s;
+}
+.cat-chip:active{transform:scale(.96)}
+.cat-chip.on{background:var(--night);color:var(--gold-light);border-color:transparent}
 
-/* Pagination */
-.pagination{display:flex;gap:8px;justify-content:center;padding:24px 0 48px;flex-wrap:wrap}
-.pagination a,.pagination span{padding:8px 16px;border-radius:30px;font-size:.9rem;font-weight:600;
-  border:1.5px solid var(--hair);background:var(--card);color:var(--ink-soft);transition:.15s;text-decoration:none}
-.pagination a:hover{border-color:var(--gold);color:var(--gold-deep)}
-.pagination .active span{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
-.pagination span.disabled{opacity:.4;cursor:default}
+.cat-meta{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 16px 4px;
+}
+.cat-meta h1{font-family:var(--font-thuluth);font-size:1.35rem;font-weight:700;line-height:1.3}
+.cat-meta .n{font-family:var(--font-ui);font-size:.75rem;color:var(--ink-soft)}
+.cat-meta select{
+  border:1px solid var(--hair);border-radius:12px;padding:8px 12px;
+  background:var(--card);font-family:var(--font-ui);font-size:.8rem;font-weight:600;
+}
 
-.empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft)}
-.empty-state p{font-size:1.1rem;margin-top:12px}
+.cat-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+  padding:12px 16px 28px;
+}
+@media(min-width:720px){
+  .cat-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding-inline:20px}
+}
+@media(min-width:1000px){
+  .cat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+.cat-empty{
+  text-align:center;padding:48px 24px;margin:12px 16px;
+  background:var(--card);border:1px dashed var(--hair);border-radius:20px;
+}
+.cat-empty .ico{
+  width:64px;height:64px;margin:0 auto 14px;border-radius:20px;
+  background:linear-gradient(145deg,#1a3a2f,#0b1612);color:var(--gold);
+  display:grid;place-items:center;font-size:1.4rem;
+}
+.cat-empty p{color:var(--ink-soft);font-size:.92rem;line-height:1.7;margin-bottom:18px}
+
+.cat-pager{display:flex;gap:8px;justify-content:center;padding:8px 16px 40px;flex-wrap:wrap}
+.cat-pager a,.cat-pager span{
+  min-width:40px;height:40px;padding:0 12px;border-radius:12px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--hair);background:var(--card);font-family:var(--font-ui);
+  font-size:.85rem;font-weight:600;text-decoration:none;color:var(--ink-soft);
+}
+.cat-pager .active span{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+
+.cat-grid .card{animation:cardIn .45s cubic-bezier(.2,.8,.2,1) both}
+.cat-grid .card:nth-child(1){animation-delay:.02s}
+.cat-grid .card:nth-child(2){animation-delay:.06s}
+.cat-grid .card:nth-child(3){animation-delay:.1s}
+.cat-grid .card:nth-child(4){animation-delay:.14s}
+.cat-grid .card:nth-child(5){animation-delay:.18s}
+.cat-grid .card:nth-child(6){animation-delay:.22s}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 </style>
 @endpush
 
 @section('content')
-{{-- Sticky toolbar --}}
-<div class="toolbar">
-  <div class="wrap">
+@php
+  $activeCat = request('category');
+  $activeName = $activeCat
+      ? ($categories->firstWhere('slug', $activeCat)?->name ?? 'نتائج البحث')
+      : (request('q') ? 'نتائج البحث' : 'كل المنتجات');
+@endphp
+
+<div class="cat-app">
+  <div class="cat-sticky">
     <form method="GET" action="{{ route('storefront.catalog') }}" id="filter-form">
-      <div class="search-row">
-        <div class="search-box">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
+      <div class="cat-search">
+        <div class="box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث عن منتج…" autocomplete="off">
         </div>
-        <button type="submit" class="search-btn">بحث</button>
+        <button type="submit">بحث</button>
       </div>
 
-      <div class="filters">
-        <a href="{{ route('storefront.catalog', array_merge(request()->except('category'), ['sort' => $sort])) }}"
-           class="chip {{ ! request('category') ? 'active' : '' }}">الكل</a>
-
+      <div class="cat-scroll" role="tablist" aria-label="التصنيفات">
+        <a href="{{ route('storefront.catalog', request()->only('q', 'sort')) }}"
+           class="cat-chip {{ ! $activeCat ? 'on' : '' }}">الكل</a>
         @foreach($categories as $cat)
-        <a href="{{ route('storefront.catalog', array_merge(request()->except('category'), ['category' => $cat->slug, 'sort' => $sort])) }}"
-           class="chip {{ request('category') === $cat->slug ? 'active' : '' }}">
-          @if($cat->icon && !str_starts_with($cat->icon, 'heroicon'))<span>{{ $cat->icon }}</span>@endif
-          {{ $cat->name }}
-        </a>
+          <a href="{{ route('storefront.catalog', array_merge(request()->only('q', 'sort'), ['category' => $cat->slug])) }}"
+             class="cat-chip {{ $activeCat === $cat->slug ? 'on' : '' }}">{{ $cat->name }}</a>
         @endforeach
-
-        <select name="sort" class="sort-sel" onchange="this.form.submit()">
-          <option value="newest"    {{ $sort === 'newest'    ? 'selected' : '' }}>الأحدث</option>
-          <option value="price_asc" {{ $sort === 'price_asc' ? 'selected' : '' }}>السعر: الأقل</option>
-          <option value="price_desc"{{ $sort === 'price_desc'? 'selected' : '' }}>السعر: الأعلى</option>
-        </select>
-
-        @if(request('category'))<input type="hidden" name="category" value="{{ request('category') }}">@endif
       </div>
+
+      @if($activeCat)<input type="hidden" name="category" value="{{ $activeCat }}">@endif
+      <input type="hidden" name="sort" id="sort-hidden" value="{{ $sort }}">
     </form>
   </div>
-</div>
 
-<div class="wrap">
+  <div class="cat-meta">
+    <div>
+      <h1>{{ $activeName }}</h1>
+      <div class="n">{{ $products->total() }} منتج</div>
+    </div>
+    <select onchange="document.getElementById('sort-hidden').value=this.value;document.getElementById('filter-form').submit()" aria-label="ترتيب">
+      <option value="newest" {{ $sort === 'newest' ? 'selected' : '' }}>الأحدث</option>
+      <option value="price_asc" {{ $sort === 'price_asc' ? 'selected' : '' }}>الأقل سعرًا</option>
+      <option value="price_desc" {{ $sort === 'price_desc' ? 'selected' : '' }}>الأعلى سعرًا</option>
+    </select>
+  </div>
+
   @if($products->isEmpty())
-    <div class="empty-state">
-      <span style="font-size:3rem">🌿</span>
-      <p>لا توجد منتجات مطابقة. جرّب تغيير الفلتر أو البحث بكلمة أخرى.</p>
-      <a href="{{ route('storefront.catalog') }}" class="btn-primary" style="margin-top:20px;display:inline-flex">عرض الكل</a>
+    <div class="cat-empty">
+      <div class="ico">◎</div>
+      <p>لا توجد منتجات في هذا التصنيف.<br>جرّب تصنيفًا آخر أو امسح البحث.</p>
+      <a href="{{ route('storefront.catalog') }}" class="btn-primary">عرض كل المنتجات</a>
     </div>
   @else
-    <div class="grid">
+    <div class="cat-grid">
       @foreach($products as $p)
         @include('storefront.partials.product-card', ['p' => $p])
       @endforeach
     </div>
-
-    {{-- Pagination --}}
     @if($products->hasPages())
-    <div class="pagination">
-      {{ $products->onEachSide(1)->links('storefront.partials.pagination') }}
-    </div>
+      <div class="cat-pager">
+        {{ $products->onEachSide(1)->links('storefront.partials.pagination') }}
+      </div>
     @endif
   @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const on = document.querySelector('.cat-chip.on');
+  if (on) on.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+});
+</script>
+@endpush

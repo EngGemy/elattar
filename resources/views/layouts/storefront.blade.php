@@ -280,7 +280,9 @@ footer.site-footer a:hover{color:var(--gold-light)}
 .btn-outline:hover{opacity:1;border-color:var(--gold);color:var(--gold-deep)}
 
 @media(max-width:600px){
-  :root{--chrome-h:108px}
+  :root{--chrome-h:64px}
+  .site-menu{display:none}
+  footer.site-footer{display:none}
   .top .wrap{min-height:56px;padding-block:8px;padding-inline:12px;gap:6px}
   .site-chrome.is-scrolled .top .wrap{min-height:50px}
   .brand.has-logo{max-width:calc(100% - 118px)}
@@ -292,12 +294,33 @@ footer.site-footer a:hover{color:var(--gold-light)}
   .wa-top span.wa-txt{display:none}
   .cart-btn{padding:7px 11px;font-size:.74rem;gap:5px}
   .cart-btn svg{width:15px;height:15px}
-  .site-menu a{padding:10px 12px;font-size:.76rem}
+  .cart-btn .cart-txt{display:none}
+  body:not(.has-dock):not(.has-product-dock){padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
+  .app-tabs{display:flex}
 }
+.app-tabs{
+  display:none;position:fixed;inset-inline:0;bottom:0;z-index:85;
+  background:#fff;border-top:1px solid var(--hair);
+  padding:6px 8px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -10px 30px -16px rgba(11,22,18,.25);
+  justify-content:space-around;align-items:stretch;gap:4px;
+}
+body.has-dock .app-tabs{display:none!important}
+body.has-product-dock .app-tabs{display:none!important}
+body.has-product-dock footer.site-footer{display:none}
+.app-tabs a{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:8px 4px;border-radius:12px;text-decoration:none;
+  font-family:var(--font-ui);font-size:.65rem;font-weight:600;color:var(--ink-soft);
+  transition:color .2s,background .2s;
+}
+.app-tabs a .ti{font-size:1.15rem;line-height:1;opacity:.85}
+.app-tabs a.on{color:var(--emerald);background:rgba(26,58,47,.08)}
+.app-tabs a.on .ti{opacity:1}
 </style>
 @stack('head-styles')
 </head>
-<body>
+<body class="@yield('body-class') @if(request()->routeIs(['storefront.cart', 'storefront.checkout', 'storefront.checkout.store'])) has-dock @endif">
 
 <div class="site-chrome" id="site-chrome">
 @php
@@ -393,6 +416,24 @@ footer.site-footer a:hover{color:var(--gold-light)}
   </div>
 </footer>
 @endunless
+
+<nav class="app-tabs" aria-label="التنقل السفلي">
+  <a href="{{ route('storefront.home') }}" @class(['on' => request()->routeIs('storefront.home')])>
+    <span class="ti">⌂</span>الرئيسية
+  </a>
+  <a href="{{ route('storefront.catalog') }}" @class(['on' => request()->routeIs('storefront.catalog') || request()->routeIs('storefront.product')])>
+    <span class="ti">◈</span>المنتجات
+  </a>
+  <a href="{{ route('storefront.offers') }}" @class(['on' => request()->routeIs('storefront.offers')])>
+    <span class="ti">٪</span>العروض
+  </a>
+  <a href="{{ route('storefront.cart') }}" @class(['on' => request()->routeIs('storefront.cart') || request()->routeIs('storefront.checkout*')])>
+    <span class="ti">◎</span>السلة
+  </a>
+  <a href="{{ route('storefront.track.lookup') }}" @class(['on' => request()->routeIs('storefront.track*')])>
+    <span class="ti">⌕</span>تتبّع
+  </a>
+</nav>
 
 <div class="store-toast" id="store-toast">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
