@@ -21,10 +21,17 @@ class CheckoutController extends Controller
 {
     public function index()
     {
-        $cart = app(CartController::class)->loadCart();
+        $cartCtrl = app(CartController::class);
+        $sync     = $cartCtrl->syncCartStock();
+        $cart     = $sync['cart'];
 
         if (empty($cart)) {
             return redirect()->route('storefront.cart')->with('error', 'السلة فارغة.');
+        }
+
+        if ($sync['removed'] || $sync['adjusted']) {
+            return redirect()->route('storefront.cart')
+                ->with('alert', $cartCtrl->buildStockNotice($sync['removed'], $sync['adjusted']));
         }
 
         $subtotal      = array_reduce($cart, fn ($c, $l) => $c + $l['line_total_minor'], 0);
@@ -63,10 +70,17 @@ class CheckoutController extends Controller
             'notes'          => 'nullable|string|max:500',
         ]);
 
-        $cart = app(CartController::class)->loadCart();
+        $cartCtrl = app(CartController::class);
+        $sync     = $cartCtrl->syncCartStock();
+        $cart     = $sync['cart'];
 
         if (empty($cart)) {
             return redirect()->route('storefront.cart')->with('error', 'السلة فارغة.');
+        }
+
+        if ($sync['removed'] || $sync['adjusted']) {
+            return redirect()->route('storefront.cart')
+                ->with('alert', $cartCtrl->buildStockNotice($sync['removed'], $sync['adjusted']));
         }
 
         $customer = Customer::firstOrCreate(
@@ -121,7 +135,16 @@ class CheckoutController extends Controller
                 ->with('success', "تم إرسال طلبك بنجاح! رقم الطلب: {$order->number}")
                 ->with('whatsapp_notify', $waUrl);
         } catch (InsufficientStockException $e) {
-            return back()->withInput()->with('error', 'بعض الأصناف غير متاحة بالكمية المطلوبة. راجع سلتك وحاول مجددًا.');
+            $sync = $cartCtrl->syncCartStock();
+
+            $notice = $cartCtrl->buildStockNotice(
+                $sync['removed'] ?: [['name' => $e->productName ?: 'أحد الأصناف', 'reason' => 'insufficient']],
+                $sync['adjusted']
+            );
+            $notice['title'] = 'تعذّر إتمام الطلب';
+            $notice['body']  = 'حصل تغيير في التوفّر أثناء تأكيد الطلب. راجع السلة وحدّث الكميات ثم حاول مرة أخرى.';
+
+            return redirect()->route('storefront.cart')->with('alert', $notice);
         } catch (InvalidOrderException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }

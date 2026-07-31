@@ -112,8 +112,23 @@
   <div class="delivery-pill">توصيل {{ $shop['governorate'] }} · {{ implode(' و', array_slice($shop['delivery_cities'], 0, 2)) }}</div>
 
   @if($errors->any())
-  <div class="flash flash-error" style="margin-bottom:12px">
-    @foreach($errors->all() as $err)<div>• {{ $err }}</div>@endforeach
+  <div class="store-alert" role="alert" style="margin-bottom:14px">
+    <div class="store-alert-head">
+      <div class="store-alert-ico" aria-hidden="true">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h3>راجع البيانات</h3>
+        <p>في حقول محتاجة تصحيح قبل إرسال الطلب.</p>
+        <ul>
+          @foreach($errors->all() as $err)
+            <li>{{ $err }}</li>
+          @endforeach
+        </ul>
+      </div>
+    </div>
   </div>
   @endif
 

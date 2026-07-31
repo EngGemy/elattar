@@ -174,10 +174,36 @@ header.top{
   background:var(--gold);border-radius:2px;
 }
 
-/* ── Flash ── */
-.flash{padding:14px 20px;border-radius:12px;margin:12px auto;max-width:800px;font-weight:600;text-align:center}
+/* ── Flash / alerts ── */
+.flash{padding:14px 18px;border-radius:14px;margin:12px auto;max-width:800px;font-weight:600;text-align:center;font-family:var(--font-ui)}
 .flash-success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .flash-error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+
+.store-alert{
+  max-width:560px;margin:14px auto 0;padding:16px 16px 14px;
+  border-radius:18px;border:1px solid rgba(166,61,47,.22);
+  background:linear-gradient(160deg,#fff8f6,#fff);
+  box-shadow:0 14px 36px -22px rgba(166,61,47,.35);
+  font-family:var(--font-ui);
+}
+.store-alert-head{display:flex;gap:12px;align-items:flex-start}
+.store-alert-ico{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  display:grid;place-items:center;background:rgba(166,61,47,.1);color:var(--clay);
+}
+.store-alert h3{font-family:var(--font-thuluth);font-size:1.05rem;font-weight:700;color:var(--ink);margin:0 0 4px;line-height:1.35}
+.store-alert p{margin:0;font-size:.86rem;color:var(--ink-soft);line-height:1.65;font-weight:500}
+.store-alert ul{margin:10px 0 0;padding:0 18px 0 0;list-style:disc}
+.store-alert li{font-size:.82rem;color:var(--ink);font-weight:600;margin-bottom:4px}
+.store-alert-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.store-alert-actions a{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;
+  background:var(--emerald);color:#fff;font-size:.82rem;font-weight:700;text-decoration:none;
+}
+.store-alert.ok{border-color:rgba(26,58,47,.18);box-shadow:0 14px 36px -22px rgba(26,58,47,.3)}
+.store-alert.ok .store-alert-ico{background:rgba(26,58,47,.1);color:var(--emerald)}
+@media(max-width:600px){.store-alert{margin-inline:14px;max-width:none}}
+
 
 /* ── Product cards — app tiles ── */
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -426,8 +452,47 @@ body.has-product-dock .app-tabs{display:none!important}
 @if(session('success'))
   <div class="flash flash-success wrap">{{ session('success') }}</div>
 @endif
-@if(session('error'))
-  <div class="flash flash-error wrap">{{ session('error') }}</div>
+@if(session('alert'))
+  @php $__alert = session('alert'); @endphp
+  <div class="store-alert {{ ($__alert['type'] ?? '') === 'ok' ? 'ok' : '' }}" role="alert">
+    <div class="store-alert-head">
+      <div class="store-alert-ico" aria-hidden="true">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h3>{{ $__alert['title'] ?? 'تنبيه' }}</h3>
+        <p>{{ $__alert['body'] ?? '' }}</p>
+        @if(!empty($__alert['items']))
+          <ul>
+            @foreach($__alert['items'] as $item)
+              <li>{{ $item }}</li>
+            @endforeach
+          </ul>
+        @endif
+        @if(!empty($__alert['cta_url']))
+          <div class="store-alert-actions">
+            <a href="{{ $__alert['cta_url'] }}">{{ $__alert['cta_label'] ?? 'متابعة' }}</a>
+          </div>
+        @endif
+      </div>
+    </div>
+  </div>
+@elseif(session('error'))
+  <div class="store-alert" role="alert">
+    <div class="store-alert-head">
+      <div class="store-alert-ico" aria-hidden="true">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h3>تعذّر إكمال العملية</h3>
+        <p>{{ session('error') }}</p>
+      </div>
+    </div>
+  </div>
 @endif
 
 @yield('content')

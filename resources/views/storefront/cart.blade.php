@@ -132,6 +132,7 @@
       'price_minor' => (int) $l['price_minor'],
       'line_total_minor' => (int) $l['line_total_minor'],
       'image' => $l['image'] ?? null,
+      'available' => isset($l['available']) ? (float) $l['available'] : null,
   ])->values()->all();
 @endphp
 
@@ -144,6 +145,29 @@
     <h1>سلتي</h1>
     <span class="count" x-text="lines.length + ' أصناف'"></span>
   </div>
+
+  @if(!empty($stockNotice))
+    <div class="store-alert" role="status" style="margin:0 0 14px">
+      <div class="store-alert-head">
+        <div class="store-alert-ico" aria-hidden="true">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h3>{{ $stockNotice['title'] }}</h3>
+          <p>{{ $stockNotice['body'] }}</p>
+          @if(!empty($stockNotice['items']))
+            <ul>
+              @foreach($stockNotice['items'] as $item)
+                <li>{{ $item }}</li>
+              @endforeach
+            </ul>
+          @endif
+        </div>
+      </div>
+    </div>
+  @endif
 
   <template x-if="!lines.length">
     <div class="app-empty">
@@ -246,7 +270,14 @@ function appCart(initialLines, subtotal, discount, total) {
     },
     bump(line, dir) {
       const step = line.step || 1;
-      const next = +(line.qty + dir * step).toFixed(3);
+      let next = +(line.qty + dir * step).toFixed(3);
+      if (dir > 0 && line.available != null && next > line.available) {
+        next = line.available;
+        if (typeof storeToast === 'function') {
+          storeToast('وصلتَ للحد الأقصى المتاح من هذا الصنف.');
+        }
+        if (next <= line.qty) return;
+      }
       this.setQty(line, next <= 0 ? 0 : next);
     },
     async setQty(line, qty) {
