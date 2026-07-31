@@ -95,6 +95,27 @@ class ProductResource extends Resource
                     Forms\Components\Repeater::make('variants')
                         ->label('المتغيّرات')
                         ->relationship()
+                        ->mutateRelationshipDataBeforeFillUsing(function (array $data): array {
+                            $variantId = $data['id'] ?? null;
+                            if (! $variantId) {
+                                $data['stock_qty'] = $data['stock_qty'] ?? 0;
+
+                                return $data;
+                            }
+
+                            $warehouseId = \App\Domain\Inventory\Models\Warehouse::query()
+                                ->where('is_default', true)
+                                ->value('id');
+
+                            $data['stock_qty'] = $warehouseId
+                                ? (float) (\App\Domain\Inventory\Models\StockLevel::query()
+                                    ->where('variant_id', $variantId)
+                                    ->where('warehouse_id', $warehouseId)
+                                    ->value('on_hand') ?? 0)
+                                : 0.0;
+
+                            return $data;
+                        })
                         ->mutateRelationshipDataBeforeSaveUsing(function (array $data): array {
                             unset($data['stock_qty']);
 
@@ -174,9 +195,8 @@ class ProductResource extends Resource
                                 ->numeric()
                                 ->minValue(0)
                                 ->step(0.001)
-                                ->default(0)
-                                ->dehydrated() // يُحفظ في حالة الفورم ثم يُزامن للمخزون بعد الحفظ
-                                ->helperText('غيّر الكمية واحفظ — أو استخدم زر «تعديل الكمية» أعلى الصفحة')
+                                ->dehydrated()
+                                ->helperText('اتركها كما هي إن لم ترد تغيير المخزون — أو استخدم زر «تعديل الكمية»')
                                 ->visible(fn () => ! auth()->user()?->isCashier())
                                 ->columnSpanFull(),
 

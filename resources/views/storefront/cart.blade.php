@@ -1,281 +1,298 @@
 @extends('layouts.storefront')
 
-@section('title', 'سلة التسوق — عبد القادر العطّار')
+@section('title', 'السلة — ' . $shop['name'])
 
 @push('head-styles')
 <style>
-/* ── Cart page ── */
-.cart-page{width:100%;max-width:100%;overflow-x:hidden}
-.page-title{font-family:var(--font-thuluth);font-size:2rem;font-weight:400;padding:28px 0 20px}
+/* ══ App-like cart shell ══ */
+.app-cart{max-width:560px;margin:0 auto;min-height:calc(100svh - var(--chrome-h));padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));position:relative}
+.app-cart-head{display:flex;align-items:center;gap:12px;padding:16px 4px 12px}
+.app-cart-head a.back{
+  width:42px;height:42px;border-radius:14px;display:grid;place-items:center;
+  background:var(--card);border:1px solid var(--hair);color:var(--ink);flex-shrink:0;
+}
+.app-cart-head h1{font-family:var(--font-thuluth);font-size:1.55rem;font-weight:400;line-height:1.3;flex:1;min-width:0}
+.app-cart-head .count{font-family:var(--font-ui);font-size:.78rem;color:var(--ink-soft);background:var(--parchment-2);padding:6px 12px;border-radius:20px}
 .money{unicode-bidi:isolate;direction:ltr;display:inline-block}
 
-/* Desktop */
-.cart-d{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:28px;padding-bottom:60px;align-items:start}
-.cart-d-table{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);overflow:hidden}
-.cart-d-head,.cart-d-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 40px;gap:12px;padding:14px 18px;align-items:center}
-.cart-d-head{border-bottom:1.5px solid var(--hair);font-family:var(--font-ui);font-size:.8rem;font-weight:600;color:var(--ink-soft)}
-.cart-d-row{border-bottom:1px solid var(--hair)}
-.cart-d-row:last-child{border-bottom:none}
-.cart-d-info{display:flex;gap:12px;align-items:flex-start;min-width:0}
-.cart-d-img{width:58px;height:58px;border-radius:9px;object-fit:cover;background:var(--parchment-2);flex-shrink:0}
-.cart-d-img.ph{display:flex;align-items:center;justify-content:center;font-size:1.4rem}
-.cart-d-name{font-weight:700;font-size:.94rem;line-height:1.45}
-.cart-d-sub{font-size:.78rem;color:var(--ink-soft);margin-top:2px}
-.cart-d-price{font-weight:700;color:var(--gold-deep);font-size:.92rem}
-.cart-d-qty{display:flex;align-items:center;gap:5px;margin-top:8px}
-.cart-d-qty button{width:32px;height:32px;border:1px solid var(--hair);border-radius:8px;background:var(--parchment);font-size:1rem;cursor:pointer}
-.cart-d-qty input{width:52px;text-align:center;border:1px solid var(--hair);border-radius:8px;padding:5px;font-size:.9rem;font-weight:700}
-.cart-d-del{background:none;border:none;color:#bbb;font-size:1.3rem;cursor:pointer;width:32px;height:32px;border-radius:8px}
-.cart-d-del:hover{background:#fee2e2;color:var(--clay)}
-
-.summary-box{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);padding:22px;position:sticky;top:calc(var(--chrome-h) + 16px)}
-.summary-box h3{font-family:var(--font-ui);font-size:1.05rem;font-weight:700;margin-bottom:14px}
-.sum-line{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--hair);font-size:.9rem}
-.sum-line:last-of-type{border-bottom:none}
-.sum-line span:first-child{color:var(--ink-soft)}
-.sum-line.sum-grand{font-weight:800;font-size:1.05rem;padding-top:10px;margin-top:4px;border-top:2px solid var(--hair)}
-.sum-line.sum-grand span:first-child{color:var(--ink)}
-.coupon-row{display:flex;gap:8px;margin-top:14px}
-.coupon-row input{flex:1;min-width:0;padding:10px 12px;border:1.5px solid var(--hair);border-radius:10px;font-size:.9rem;background:var(--parchment-2)}
-.coupon-row button{padding:10px 16px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;white-space:nowrap}
-.coupon-ok{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#d1fae5;border:1px solid #6ee7b7;padding:10px 12px;border-radius:10px;font-size:.85rem;font-weight:600;color:#065f46;margin-top:12px}
-.btn-checkout{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:15px;background:var(--ink);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none}
-.btn-checkout:hover{background:var(--gold-deep)}
-.continue-shop{margin-top:14px}
-.continue-shop .btn-outline{display:inline-flex}
-
-.empty-cart{text-align:center;padding:56px 16px;color:var(--ink-soft)}
-.empty-cart p{font-size:1.05rem;margin:14px 0}
-
-/* Mobile — separate clean layout */
-.cart-m{display:none;width:100%;max-width:100%;padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
-.cart-m-list{display:flex;flex-direction:column;gap:10px;width:100%}
-.cart-m-item{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:12px;width:100%;max-width:100%;overflow:hidden;box-shadow:0 4px 16px -8px rgba(42,24,16,.1)}
-.cart-m-top{display:flex;align-items:flex-start;gap:10px;width:100%;min-width:0}
-.cart-m-img{width:52px;height:52px;border-radius:10px;object-fit:cover;background:var(--parchment-2);flex-shrink:0}
-.cart-m-img.ph{display:flex;align-items:center;justify-content:center;font-size:1.3rem}
-.cart-m-info{flex:1;min-width:0;overflow:hidden}
-.cart-m-name{font-weight:700;font-size:.9rem;line-height:1.4;word-break:break-word}
-.cart-m-unit{font-size:.74rem;color:var(--ink-soft);margin-top:2px}
-.cart-m-del{flex-shrink:0;width:32px;height:32px;border:none;background:var(--parchment-2);color:#aaa;border-radius:8px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.cart-m-del:active{background:#fee2e2;color:var(--clay)}
-.cart-m-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--hair);width:100%;min-width:0}
-.cart-m-qty{display:flex;align-items:center;gap:4px;background:var(--parchment-2);border:1px solid var(--hair);border-radius:10px;padding:3px 4px;flex-shrink:1;min-width:0}
-.cart-m-qty button{width:32px;height:32px;border:none;background:#fff;border-radius:8px;font-size:1.1rem;font-weight:700;cursor:pointer;flex-shrink:0;color:var(--ink)}
-.cart-m-qty input{width:44px;min-width:0;border:none;background:transparent;text-align:center;font-size:16px;font-weight:700;padding:4px 0;-moz-appearance:textfield}
-.cart-m-qty input::-webkit-outer-spin-button,.cart-m-qty input::-webkit-inner-spin-button{-webkit-appearance:none}
-.cart-m-qty .u{font-size:.7rem;color:var(--ink-soft);padding-inline:2px;flex-shrink:0}
-.cart-m-line{font-weight:800;font-size:.95rem;color:var(--gold-deep);white-space:nowrap;flex-shrink:0}
-
-.cart-m-summary{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:14px;margin-top:14px;width:100%;max-width:100%}
-.cart-m-summary h3{font-family:var(--font-ui);font-size:.92rem;font-weight:700;margin-bottom:10px}
-.cart-m-summary .sum-line{font-size:.84rem;padding:6px 0}
-.cart-m-summary .sum-line.sum-grand{font-size:.95rem}
-.cart-m-summary .coupon-row{margin-top:10px}
-.cart-m-summary .coupon-row input{font-size:16px;padding:11px 12px}
-.cart-m-summary .coupon-row button{padding:11px 14px;font-size:.88rem}
-.cart-m-continue{margin-top:12px;text-align:center}
-.cart-m-continue .btn-outline{width:100%;justify-content:center;font-size:.88rem;padding:11px}
-
-.cart-m-bar{
-  display:none;position:fixed;inset-inline:0;bottom:0;z-index:55;width:100%;max-width:100vw;
-  background:#fff;border-top:1px solid var(--hair);
-  padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
-  box-shadow:0 -6px 24px -6px rgba(42,24,16,.12);
+.app-empty{text-align:center;padding:72px 20px 40px;color:var(--ink-soft)}
+.app-empty .ico{
+  width:88px;height:88px;margin:0 auto 18px;border-radius:28px;
+  background:linear-gradient(145deg,#1a1510,#0c0a08);color:var(--gold-light);
+  display:grid;place-items:center;font-size:2rem;
+  box-shadow:0 16px 40px -12px rgba(12,10,8,.35);
 }
-.cart-m-bar .row{display:flex;align-items:center;gap:10px;width:100%;max-width:100%}
-.cart-m-bar .lbl{flex:1;min-width:0}
-.cart-m-bar .lbl small{display:block;font-size:.68rem;color:var(--ink-soft)}
-.cart-m-bar .lbl strong{font-size:1.1rem;color:var(--gold-deep)}
-.cart-m-bar .btn-checkout{margin:0;flex:1;min-width:0;padding:13px 10px;font-size:.9rem;border-radius:11px}
+.app-empty p{font-size:1.05rem;margin-bottom:22px;line-height:1.7}
 
-@media(max-width:767px){
-  .cart-d{display:none}
-  .cart-m{display:block}
-  .cart-m-bar{display:block}
-  .page-title{font-size:1.35rem;padding:14px 0 12px}
+.app-lines{display:flex;flex-direction:column;gap:12px;padding:4px 0 8px}
+.app-line{
+  display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;
+  background:var(--card);border:1px solid var(--hair);border-radius:18px;padding:12px;
+  box-shadow:0 8px 28px -18px rgba(12,10,8,.2);
+  transition:opacity .2s,transform .2s;
+}
+.app-line.is-busy{opacity:.55;pointer-events:none}
+.app-line img,.app-line .ph{
+  width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--parchment-2);
+}
+.app-line .ph{display:grid;place-items:center;font-size:1.6rem;color:var(--copper)}
+.app-line-body{min-width:0;display:flex;flex-direction:column;gap:8px}
+.app-line-top{display:flex;align-items:flex-start;gap:8px}
+.app-line-name{font-weight:700;font-size:.95rem;line-height:1.4;flex:1;min-width:0;word-break:break-word}
+.app-line-del{
+  width:34px;height:34px;border:none;border-radius:10px;background:var(--parchment-2);
+  color:#999;font-size:1.15rem;cursor:pointer;flex-shrink:0;
+}
+.app-line-del:active{background:#fee2e2;color:var(--clay)}
+.app-line-meta{font-size:.78rem;color:var(--ink-soft)}
+.app-line-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto}
+.app-stepper{
+  display:inline-flex;align-items:center;gap:0;
+  background:var(--parchment-2);border:1px solid var(--hair);border-radius:14px;padding:3px;
+}
+.app-stepper button{
+  width:40px;height:40px;border:none;border-radius:11px;background:var(--card);
+  font-size:1.25rem;font-weight:700;cursor:pointer;color:var(--ink);
+  box-shadow:0 1px 3px rgba(12,10,8,.06);
+}
+.app-stepper button:active{transform:scale(.94)}
+.app-stepper .qty{
+  min-width:52px;text-align:center;font-weight:800;font-size:1rem;padding:0 4px;
+  font-variant-numeric:tabular-nums;
+}
+.app-stepper .unit{font-size:.68rem;color:var(--ink-soft);padding-inline-end:6px}
+.app-line-total{font-weight:800;font-size:1.05rem;color:var(--gold-deep);white-space:nowrap}
+
+.app-sheet{
+  background:var(--card);border:1px solid var(--hair);border-radius:20px;padding:16px;
+  margin-top:16px;box-shadow:0 8px 28px -18px rgba(12,10,8,.18);
+}
+.app-sheet h3{font-family:var(--font-ui);font-size:.92rem;margin-bottom:12px}
+.app-sum{display:flex;justify-content:space-between;gap:8px;padding:8px 0;font-size:.9rem;border-bottom:1px solid var(--hair)}
+.app-sum:last-of-type{border-bottom:none}
+.app-sum.muted span:first-child{color:var(--ink-soft)}
+.app-sum.grand{font-weight:800;font-size:1.05rem;padding-top:12px;margin-top:4px;border-top:2px solid var(--hair)}
+.app-coupon{display:flex;gap:8px;margin-top:12px}
+.app-coupon input{
+  flex:1;min-width:0;padding:13px 14px;border:1.5px solid var(--hair);border-radius:12px;
+  font-size:16px;background:var(--parchment-2);
+}
+.app-coupon button{
+  padding:13px 16px;border:none;border-radius:12px;background:var(--ink);color:var(--gold-light);
+  font-weight:700;cursor:pointer;white-space:nowrap;
+}
+.app-coupon-ok{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  background:#e8f5e9;color:#1b5e20;padding:12px;border-radius:12px;margin-top:12px;font-weight:600;font-size:.88rem;
+}
+.app-coupon-ok button{background:none;border:none;color:#1b5e20;font-weight:700;cursor:pointer}
+
+.app-dock{
+  position:fixed;inset-inline:0;bottom:0;z-index:70;
+  background:rgba(255,252,248,.94);backdrop-filter:blur(16px);
+  border-top:1px solid var(--hair);
+  padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -12px 40px -16px rgba(12,10,8,.2);
+}
+.app-dock-inner{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.app-dock .tot small{display:block;font-size:.7rem;color:var(--ink-soft);font-family:var(--font-ui)}
+.app-dock .tot strong{font-size:1.2rem;color:var(--gold-deep)}
+.app-dock .cta{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  min-height:52px;padding:14px 16px;border-radius:16px;border:none;
+  background:linear-gradient(135deg,#1a1510,#0c0a08);color:var(--gold-light);
+  font-weight:800;font-size:1rem;text-decoration:none;
+  box-shadow:0 12px 28px -10px rgba(12,10,8,.45);
+}
+.app-dock .cta:active{transform:scale(.98)}
+
+@media(min-width:900px){
+  .app-cart{max-width:720px;padding-top:8px}
+  .app-lines{gap:14px}
 }
 </style>
 @endpush
 
 @section('content')
-<div class="wrap cart-page">
-  <h1 class="page-title">سلة التسوق @if(!empty($cart))<span style="font-size:.55em;color:var(--ink-soft);font-family:var(--font-ui)">({{ count($cart) }})</span>@endif</h1>
+@php
+  $taxMinor = (int) round($total - ($total / 1.14));
+  $subtotalFmt = number_format($subtotal / 100, 2);
+  $taxFmt = number_format($taxMinor / 100, 2);
+  $totalFmt = number_format($total / 100, 2);
+  $linesPayload = collect($cart)->map(fn ($l) => [
+      'variant_id' => $l['variant_id'],
+      'name' => $l['name'],
+      'qty' => (float) $l['qty'],
+      'step' => (float) ($l['step'] ?? 1),
+      'is_weighted' => (bool) $l['is_weighted'],
+      'unit_label' => $l['unit_label'],
+      'price_minor' => (int) $l['price_minor'],
+      'line_total_minor' => (int) $l['line_total_minor'],
+      'image' => $l['image'] ?? null,
+  ])->values()->all();
+@endphp
 
-  @if(empty($cart))
-  <div class="empty-cart">
-    <span style="font-size:3rem">🛒</span>
-    <p>سلتك فارغة! تصفّح منتجاتنا وأضف ما يعجبك.</p>
-    <a href="{{ route('storefront.catalog') }}" class="btn-primary" style="display:inline-flex;margin-top:8px">تصفّح المنتجات</a>
-  </div>
-  @else
+<div class="wrap app-cart" x-data="appCart(@js($linesPayload), {{ (int) $subtotal }}, {{ (int) $discountMinor }}, {{ (int) $total }})" x-cloak>
 
-  @php
-    $taxMinor = (int) round($total - ($total / 1.14));
-    $subtotalFmt = number_format($subtotal / 100, 2);
-    $taxFmt = number_format($taxMinor / 100, 2);
-    $totalFmt = number_format($total / 100, 2);
-  @endphp
-
-  {{-- ══ MOBILE ══ --}}
-  <div class="cart-m">
-    <div class="cart-m-list">
-      @foreach($cart as $line)
-      @php
-        $unitFmt = number_format($line['price_minor'] / 100, 2);
-        $lineFmt = number_format($line['line_total_minor'] / 100, 2);
-      @endphp
-      <article class="cart-m-item">
-        <div class="cart-m-top">
-          @if($line['image'])
-            <img src="{{ $line['image'] }}" alt="" class="cart-m-img">
-          @else
-            <div class="cart-m-img ph">🌿</div>
-          @endif
-          <div class="cart-m-info">
-            <div class="cart-m-name">{{ $line['name'] }}</div>
-            <div class="cart-m-unit">
-              <span class="money">{{ $unitFmt }}</span> ج.م /
-              {{ $line['is_weighted'] ? 'كجم' : $line['unit_label'] }}
-            </div>
-          </div>
-          <form action="{{ route('storefront.cart.remove', $line['variant_id']) }}" method="POST">
-            @csrf @method('DELETE')
-            <button type="submit" class="cart-m-del" aria-label="حذف">×</button>
-          </form>
-        </div>
-        <div class="cart-m-bottom">
-          <form action="{{ route('storefront.cart.update') }}" method="POST" class="cart-m-qty">
-            @csrf
-            <input type="hidden" name="variant_id" value="{{ $line['variant_id'] }}">
-            <button type="submit" name="qty" value="{{ max(0, $line['qty'] - $line['step']) }}">−</button>
-            <input type="number" name="qty" value="{{ $line['qty'] }}" step="{{ $line['step'] }}" onchange="this.form.submit()">
-            <span class="u">{{ $line['is_weighted'] ? 'جم' : $line['unit_label'] }}</span>
-            <button type="submit" name="qty" value="{{ $line['qty'] + $line['step'] }}">+</button>
-          </form>
-          <span class="cart-m-line"><span class="money">{{ $lineFmt }}</span> ج.م</span>
-        </div>
-      </article>
-      @endforeach
-    </div>
-
-    <div class="cart-m-summary">
-      <h3>ملخص الطلب</h3>
-      <div class="sum-line"><span>المجموع الفرعي</span><span><span class="money">{{ $subtotalFmt }}</span> ج.م</span></div>
-      @if($discountMinor > 0)
-      <div class="sum-line"><span>خصم ({{ $coupon }})</span><span style="color:var(--olive)">− <span class="money">{{ number_format($discountMinor / 100, 2) }}</span> ج.م</span></div>
-      @endif
-      <div class="sum-line"><span>ض.ق.م 14%</span><span><span class="money">{{ $taxFmt }}</span> ج.م</span></div>
-      <div class="sum-line sum-grand"><span>الإجمالي</span><strong><span class="money">{{ $totalFmt }}</span> ج.م</strong></div>
-
-      @if($coupon)
-      <div class="coupon-ok">
-        <span>✓ {{ $coupon }}</span>
-        <form action="{{ route('storefront.cart.coupon') }}" method="POST">
-          @csrf<button type="submit" name="coupon" value="" style="background:none;border:none;color:#065f46;font-weight:700;cursor:pointer;font-size:.82rem">إزالة</button>
-        </form>
-      </div>
-      @else
-      <form action="{{ route('storefront.cart.coupon') }}" method="POST" class="coupon-row">
-        @csrf
-        <input type="text" name="coupon" placeholder="كوبون خصم" style="text-transform:uppercase">
-        <button type="submit">تطبيق</button>
-      </form>
-      @endif
-    </div>
-
-    <div class="cart-m-continue">
-      <a href="{{ route('storefront.catalog') }}" class="btn-outline">← مواصلة التسوق</a>
-    </div>
+  <div class="app-cart-head">
+    <a href="{{ route('storefront.catalog') }}" class="back" aria-label="رجوع">
+      <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <h1>سلتي</h1>
+    <span class="count" x-text="lines.length + ' أصناف'"></span>
   </div>
 
-  <div class="cart-m-bar">
-    <div class="row">
-      <div class="lbl">
-        <small>الإجمالي</small>
-        <strong><span class="money">{{ $totalFmt }}</span> ج.م</strong>
-      </div>
-      <a href="{{ route('storefront.checkout') }}" class="btn-checkout">إتمام الطلب</a>
+  <template x-if="!lines.length">
+    <div class="app-empty">
+      <div class="ico">🛍</div>
+      <p>سلتك فارغة — ابدأ بإضافة بهاراتك المفضّلة</p>
+      <a href="{{ route('storefront.catalog') }}" class="btn-primary">تصفّح المنتجات</a>
     </div>
-  </div>
+  </template>
 
-  {{-- ══ DESKTOP ══ --}}
-  <div class="cart-d">
+  <template x-if="lines.length">
     <div>
-      <div class="cart-d-table">
-        <div class="cart-d-head">
-          <span>المنتج</span><span>السعر</span><span>الإجمالي</span><span></span>
-        </div>
-        @foreach($cart as $line)
-        @php
-          $unitFmt = number_format($line['price_minor'] / 100, 2);
-          $lineFmt = number_format($line['line_total_minor'] / 100, 2);
-        @endphp
-        <div class="cart-d-row">
-          <div class="cart-d-info">
-            @if($line['image'])
-              <img src="{{ $line['image'] }}" alt="" class="cart-d-img">
-            @else
-              <div class="cart-d-img ph">🌿</div>
-            @endif
-            <div style="min-width:0">
-              <div class="cart-d-name">{{ $line['name'] }}</div>
-              <div class="cart-d-sub"><span class="money">{{ $unitFmt }}</span> ج.م / {{ $line['is_weighted'] ? 'كجم' : $line['unit_label'] }}</div>
-              <form action="{{ route('storefront.cart.update') }}" method="POST" class="cart-d-qty">
-                @csrf
-                <input type="hidden" name="variant_id" value="{{ $line['variant_id'] }}">
-                <button type="submit" name="qty" value="{{ max(0, $line['qty'] - $line['step']) }}">−</button>
-                <input type="number" name="qty" value="{{ $line['qty'] }}" step="{{ $line['step'] }}" onchange="this.form.submit()">
-                <button type="submit" name="qty" value="{{ $line['qty'] + $line['step'] }}">+</button>
-                <span style="font-size:.78rem;color:var(--ink-soft)">{{ $line['is_weighted'] ? 'جم' : $line['unit_label'] }}</span>
-              </form>
+      <div class="app-lines">
+        <template x-for="line in lines" :key="line.variant_id">
+          <article class="app-line" :class="busyId === line.variant_id && 'is-busy'">
+            <template x-if="line.image">
+              <img :src="line.image" alt="" width="72" height="72">
+            </template>
+            <template x-if="!line.image">
+              <div class="ph">ع</div>
+            </template>
+            <div class="app-line-body">
+              <div class="app-line-top">
+                <div class="app-line-name" x-text="line.name"></div>
+                <button type="button" class="app-line-del" @click="setQty(line, 0)" aria-label="حذف">×</button>
+              </div>
+              <div class="app-line-meta">
+                <span class="money" x-text="fmt(line.price_minor)"></span> ج.م /
+                <span x-text="line.is_weighted ? 'كجم' : line.unit_label"></span>
+              </div>
+              <div class="app-line-foot">
+                <div class="app-stepper">
+                  <button type="button" @click="bump(line, -1)" aria-label="تقليل">−</button>
+                  <span class="qty" x-text="line.is_weighted ? Math.round(line.qty) : line.qty"></span>
+                  <span class="unit" x-text="line.is_weighted ? 'جم' : line.unit_label"></span>
+                  <button type="button" @click="bump(line, 1)" aria-label="زيادة">+</button>
+                </div>
+                <div class="app-line-total"><span class="money" x-text="fmt(line.line_total_minor)"></span> ج.م</div>
+              </div>
             </div>
+          </article>
+        </template>
+      </div>
+
+      <div class="app-sheet">
+        <h3>ملخص الطلب</h3>
+        <div class="app-sum muted"><span>المجموع الفرعي</span><span><span class="money" x-text="fmt(subtotal)"></span> ج.م</span></div>
+        <template x-if="discount > 0">
+          <div class="app-sum muted"><span>الخصم</span><span style="color:var(--olive)">− <span class="money" x-text="fmt(discount)"></span> ج.م</span></div>
+        </template>
+        <div class="app-sum muted"><span>ض.ق.م 14%</span><span><span class="money" x-text="fmt(tax)"></span> ج.م</span></div>
+        <div class="app-sum grand"><span>الإجمالي</span><strong><span class="money" x-text="fmt(total)"></span> ج.م</strong></div>
+
+        @if($coupon)
+          <div class="app-coupon-ok">
+            <span>✓ {{ $coupon }}</span>
+            <form action="{{ route('storefront.cart.coupon') }}" method="POST">
+              @csrf
+              <button type="submit" name="coupon" value="">إزالة</button>
+            </form>
           </div>
-          <div class="cart-d-price"><span class="money">{{ $unitFmt }}</span> ج.م</div>
-          <div class="cart-d-price"><span class="money">{{ $lineFmt }}</span> ج.م</div>
-          <form action="{{ route('storefront.cart.remove', $line['variant_id']) }}" method="POST">
-            @csrf @method('DELETE')
-            <button type="submit" class="cart-d-del">×</button>
+        @else
+          <form action="{{ route('storefront.cart.coupon') }}" method="POST" class="app-coupon">
+            @csrf
+            <input type="text" name="coupon" placeholder="كوبون خصم" style="text-transform:uppercase" autocomplete="off">
+            <button type="submit">تطبيق</button>
           </form>
+        @endif
+      </div>
+    </div>
+  </template>
+
+  <template x-if="lines.length">
+    <div class="app-dock">
+      <div class="app-dock-inner">
+        <div class="tot">
+          <small>الإجمالي</small>
+          <strong><span class="money" x-text="fmt(total)"></span> ج.م</strong>
         </div>
-        @endforeach
-      </div>
-      <div class="continue-shop">
-        <a href="{{ route('storefront.catalog') }}" class="btn-outline">← مواصلة التسوق</a>
+        <a href="{{ route('storefront.checkout') }}" class="cta">متابعة الشراء</a>
       </div>
     </div>
-
-    <div class="summary-box">
-      <h3>ملخص الطلب</h3>
-      <div class="sum-line"><span>المجموع الفرعي</span><span><span class="money">{{ $subtotalFmt }}</span> ج.م</span></div>
-      @if($discountMinor > 0)
-      <div class="sum-line"><span>خصم ({{ $coupon }})</span><span style="color:var(--olive)">− <span class="money">{{ number_format($discountMinor / 100, 2) }}</span> ج.م</span></div>
-      @endif
-      <div class="sum-line"><span>ض.ق.م 14%</span><span><span class="money">{{ $taxFmt }}</span> ج.م</span></div>
-      <div class="sum-line sum-grand"><span>الإجمالي</span><strong><span class="money">{{ $totalFmt }}</span> ج.م</strong></div>
-
-      @if($coupon)
-      <div class="coupon-ok">
-        <span>✓ كوبون «{{ $coupon }}»</span>
-        <form action="{{ route('storefront.cart.coupon') }}" method="POST">
-          @csrf<button type="submit" name="coupon" value="" style="background:none;border:none;color:#065f46;font-weight:700;cursor:pointer">إزالة</button>
-        </form>
-      </div>
-      @else
-      <form action="{{ route('storefront.cart.coupon') }}" method="POST" class="coupon-row">
-        @csrf
-        <input type="text" name="coupon" placeholder="كوبون الخصم…" style="text-transform:uppercase">
-        <button type="submit">تطبيق</button>
-      </form>
-      @endif
-
-      <a href="{{ route('storefront.checkout') }}" class="btn-checkout">
-        <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        إتمام الطلب
-      </a>
-    </div>
-  </div>
-
-  @endif
+  </template>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function appCart(initialLines, subtotal, discount, total) {
+  return {
+    lines: initialLines,
+    subtotal,
+    discount,
+    total,
+    busyId: null,
+    get tax() {
+      return Math.round(this.total - (this.total / 1.14));
+    },
+    fmt(minor) {
+      return ((minor || 0) / 100).toLocaleString('ar-EG', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    },
+    bump(line, dir) {
+      const step = line.step || 1;
+      const next = +(line.qty + dir * step).toFixed(3);
+      this.setQty(line, next <= 0 ? 0 : next);
+    },
+    async setQty(line, qty) {
+      if (this.busyId) return;
+      this.busyId = line.variant_id;
+      try {
+        const res = await fetch(@js(route('storefront.cart.update')), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify({ variant_id: line.variant_id, qty }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.message || 'تعذّر التحديث');
+
+        const badge = document.getElementById('cart-badge');
+        if (badge) {
+          badge.textContent = data.cart_count ?? 0;
+          badge.style.display = (data.cart_count ?? 0) > 0 ? '' : 'none';
+        }
+
+        if (data.removed || qty <= 0) {
+          this.lines = this.lines.filter(l => l.variant_id !== line.variant_id);
+        } else if (data.line) {
+          const i = this.lines.findIndex(l => l.variant_id === line.variant_id);
+          if (i >= 0) this.lines[i] = { ...this.lines[i], ...data.line };
+        }
+
+        if (typeof data.subtotal_minor === 'number') {
+          this.subtotal = data.subtotal_minor;
+          this.total = Math.max(0, this.subtotal - this.discount);
+        } else {
+          this.recalcLocal();
+        }
+      } catch (e) {
+        storeToast(e.message || 'حدث خطأ');
+      } finally {
+        this.busyId = null;
+      }
+    },
+    recalcLocal() {
+      this.subtotal = this.lines.reduce((s, l) => s + (l.line_total_minor || 0), 0);
+      this.total = Math.max(0, this.subtotal - this.discount);
+    },
+  };
+}
+</script>
+@endpush

@@ -94,11 +94,14 @@ class CartController extends Controller
 
         session(['storefront_cart' => $cart]);
 
+        $cartCount = $this->cartBadgeCount($cart);
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'ok'         => true,
                 'message'    => 'تم إضافة المنتج للسلة',
-                'cart_count' => count($cart),
+                'cart_count' => $cartCount,
+                'line_qty'   => $cart[$key]['qty'],
                 'line'       => $cart[$key],
             ]);
         }
@@ -117,7 +120,7 @@ class CartController extends Controller
         $key  = (string) $data['variant_id'];
 
         if (! isset($cart[$key])) {
-            return back();
+            return $this->cartResponse($request, false, 'الصنف غير موجود في السلة.');
         }
 
         $variant = ProductVariant::find($cart[$key]['variant_id']);
@@ -126,30 +129,49 @@ class CartController extends Controller
             unset($cart[$key]);
             session(['storefront_cart' => $cart]);
 
-            return back();
+            return $this->cartResponse($request, true, 'تم حذف الصنف.', [
+                'cart_count'     => $this->cartBadgeCount($cart),
+                'removed'        => true,
+                'subtotal_minor' => array_reduce($cart, fn ($c, $l) => $c + $l['line_total_minor'], 0),
+            ]);
         }
 
         if ((float) $data['qty'] <= 0) {
             unset($cart[$key]);
-        } else {
-            $qty = $variant->normalizeOrderQty((float) $data['qty']);
+            session(['storefront_cart' => $cart]);
 
-            if (! $variant->isValidQuantity(Quantity::of($qty, $variant->unit))) {
-                return back()->with('error', 'الكمية غير صالحة — الحد الأدنى ' . $variant->minOrderQty() . ' ' . $variant->unit->labelAr());
-            }
-
-            $warehouseId = (int) (Warehouse::where('is_default', true)->value('id') ?? 1);
-            if ($qty > $variant->availableAt($warehouseId)) {
-                return back()->with('error', 'الكمية المطلوبة غير متاحة حاليًا.');
-            }
-
-            $cart[$key]['qty']              = $qty;
-            $cart[$key]['line_total_minor'] = $this->lineTotal($cart[$key]);
+            return $this->cartResponse($request, true, 'تم حذف الصنف.', [
+                'cart_count'     => $this->cartBadgeCount($cart),
+                'removed'        => true,
+                'subtotal_minor' => array_reduce($cart, fn ($c, $l) => $c + $l['line_total_minor'], 0),
+            ]);
         }
 
+        $qty = $variant->normalizeOrderQty((float) $data['qty']);
+
+        if (! $variant->isValidQuantity(Quantity::of($qty, $variant->unit))) {
+            return $this->cartResponse(
+                $request,
+                false,
+                'الكمية غير صالحة — الحد الأدنى ' . $variant->minOrderQty() . ' ' . $variant->unit->labelAr()
+            );
+        }
+
+        $warehouseId = (int) (Warehouse::where('is_default', true)->value('id') ?? 1);
+        if ($qty > $variant->availableAt($warehouseId)) {
+            return $this->cartResponse($request, false, 'الكمية المطلوبة غير متاحة حاليًا.');
+        }
+
+        $cart[$key]['qty']              = $qty;
+        $cart[$key]['line_total_minor'] = $this->lineTotal($cart[$key]);
         session(['storefront_cart' => $cart]);
 
-        return back();
+        return $this->cartResponse($request, true, 'تم تحديث الكمية', [
+            'cart_count'        => $this->cartBadgeCount($cart),
+            'line'              => $cart[$key],
+            'line_total_fmt'    => number_format($cart[$key]['line_total_minor'] / 100, 2),
+            'subtotal_minor'    => array_reduce($cart, fn ($c, $l) => $c + $l['line_total_minor'], 0),
+        ]);
     }
 
     public function remove(string $variantId)
@@ -213,6 +235,21 @@ class CartController extends Controller
         return $line['is_weighted']
             ? (int) round($line['price_minor'] * $line['qty'] / 1000)
             : (int) round($line['price_minor'] * $line['qty']);
+    }
+
+    /** شارة السلة = عدد الأسطر + إشارة للكميات الزائدة */
+    private function cartBadgeCount(array $cart): int
+    {
+        $n = 0;
+        foreach ($cart as $line) {
+            if (! empty($line['is_weighted'])) {
+                $n += 1;
+            } else {
+                $n += max(1, (int) round((float) ($line['qty'] ?? 1)));
+            }
+        }
+
+        return $n;
     }
 
     private function cartResponse(Request $request, bool $ok, string $message, array $extra = [])

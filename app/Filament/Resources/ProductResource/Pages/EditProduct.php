@@ -18,6 +18,9 @@ class EditProduct extends EditRecord
 {
     protected static string $resource = ProductResource::class;
 
+    /** لقطة كميات الفورم قبل أن يفرّغها Filament بعد حفظ العلاقات */
+    private ?array $pendingVariantStocks = null;
+
     protected function getHeaderActions(): array
     {
         return [
@@ -72,7 +75,6 @@ class EditProduct extends EditRecord
                             ->success()
                             ->send();
 
-                        $this->refreshFormData(['variants']);
                         $this->fillForm();
                     } catch (\Throwable $e) {
                         Notification::make()
@@ -87,40 +89,28 @@ class EditProduct extends EditRecord
         ];
     }
 
-    protected function afterFill(): void
+    /**
+     * يُستدعى داخل getState قبل saveRelationships — ما زال stock_qty موجودًا في الحالة.
+     */
+    protected function beforeSave(): void
     {
-        $this->hydrateStockQtyIntoForm();
+        $this->pendingVariantStocks = $this->form->getRawState()['variants'] ?? [];
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $rawVariants = $this->form->getRawState()['variants'] ?? [];
-
-        $record = parent::handleRecordUpdate($record, $data);
-
-        $this->syncVariantStocks($rawVariants);
-
-        return $record;
+        // لا نزامن المخزون هنا — getRawState يكون قد فُرغ بعد تحميل العلاقات
+        return parent::handleRecordUpdate($record, $data);
     }
 
-    private function hydrateStockQtyIntoForm(): void
+    protected function afterSave(): void
     {
-        $warehouseId = Warehouse::query()->where('is_default', true)->value('id');
-        $variants    = $this->data['variants'] ?? [];
-
-        if (! is_array($variants) || ! $warehouseId) {
+        if ($this->pendingVariantStocks === null) {
             return;
         }
 
-        foreach ($variants as $key => $variant) {
-            $variantId = $variant['id'] ?? null;
-            $this->data['variants'][$key]['stock_qty'] = $variantId
-                ? (float) (StockLevel::query()
-                    ->where('variant_id', $variantId)
-                    ->where('warehouse_id', $warehouseId)
-                    ->value('on_hand') ?? 0)
-                : 0.0;
-        }
+        $this->syncVariantStocks($this->pendingVariantStocks);
+        $this->pendingVariantStocks = null;
     }
 
     /** @param  array<string, mixed>  $rows */
@@ -130,6 +120,11 @@ class EditProduct extends EditRecord
 
         foreach ($rows as $row) {
             if (! is_array($row) || ! array_key_exists('stock_qty', $row)) {
+                continue;
+            }
+
+            // null/فارغ = المستخدم لم يغيّر الكمية أو الحقل اختفى — لا تمس المخزون
+            if ($row['stock_qty'] === null || $row['stock_qty'] === '') {
                 continue;
             }
 
@@ -145,7 +140,7 @@ class EditProduct extends EditRecord
 
             $setter->execute(
                 variant: $variant,
-                targetQty: (float) $row['stock_qty'],
+                targetQty: max(0, (float) $row['stock_qty']),
                 note: 'تعديل كمية من تعديل المنتج',
             );
         }

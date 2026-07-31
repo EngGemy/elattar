@@ -13,16 +13,28 @@ class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
 
+    /** لقطة كميات الفورم قبل إنشاء السجل */
+    private ?array $pendingVariantStocks = null;
+
+    protected function beforeCreate(): void
+    {
+        $this->pendingVariantStocks = $this->form->getRawState()['variants'] ?? [];
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
-        $rawVariants = $this->form->getRawState()['variants'] ?? [];
+        // المتغيّرات تُحفظ بعد هذه الخطوة عبر saveRelationships
+        return parent::handleRecordCreation($data);
+    }
 
-        $record = parent::handleRecordCreation($data);
+    protected function afterCreate(): void
+    {
+        if ($this->pendingVariantStocks === null || ! $this->record) {
+            return;
+        }
 
-        // Filament قد لا يعيّن $this->record بعد — نستخدم الـ model المُرجع مباشرة
-        $this->syncVariantStocks($record, $rawVariants);
-
-        return $record;
+        $this->syncVariantStocks($this->record, $this->pendingVariantStocks);
+        $this->pendingVariantStocks = null;
     }
 
     /**
@@ -34,6 +46,10 @@ class CreateProduct extends CreateRecord
 
         foreach ($rows as $row) {
             if (! is_array($row) || ! array_key_exists('stock_qty', $row)) {
+                continue;
+            }
+
+            if ($row['stock_qty'] === null || $row['stock_qty'] === '') {
                 continue;
             }
 
