@@ -31,7 +31,6 @@
             <small x-text="unitSuffix()"></small>
         </div>
 
-        {{-- اختيار المتغيّر --}}
         <template x-if="product.variants.length > 1">
             <div class="variant-chips">
                 <template x-for="v in product.variants" :key="v.id">
@@ -45,17 +44,17 @@
         </template>
 
         <div class="card-purchase">
-            {{-- أوزان للبهارات --}}
             <template x-if="variant?.is_weighted && variant?.in_stock">
                 <div class="weight-panel">
-                    <div class="weight-strip">
+                    <div class="weight-strip" dir="ltr">
                         <button type="button" class="weight-step-btn" @click="adjustWeight(-1)" aria-label="تقليل">−</button>
-                        <input type="number" class="weight-input" x-model.number="weightGrams"
-                               :min="variant.step || 1" :step="variant.step || 1"
-                               @change="snapWeight()" aria-label="الكمية بالجرام">
-                        <span class="weight-unit">جم</span>
+                        <div class="weight-mid">
+                            <input type="number" class="weight-input" x-model.number="weightGrams"
+                                   :min="variant.step || 1" :step="variant.step || 1"
+                                   @change="snapWeight()" aria-label="الكمية بالجرام">
+                            <span class="weight-unit">جم</span>
+                        </div>
                         <button type="button" class="weight-step-btn" @click="adjustWeight(1)" aria-label="زيادة">+</button>
-                        <span class="weight-strip-total" x-text="weightPrice(weightGrams)"></span>
                     </div>
 
                     <div class="weight-chips" role="group" aria-label="كميات سريعة">
@@ -84,17 +83,17 @@
                 </div>
             </template>
 
-            {{-- كمية للقطع --}}
             <template x-if="variant && !variant.is_weighted && variant.in_stock">
                 <div class="piece-panel">
                     <span class="unit-chip" x-text="variant.label"></span>
-                    <div class="weight-strip weight-strip--piece">
+                    <div class="weight-strip" dir="ltr">
                         <button type="button" class="weight-step-btn"
-                                @click="pieceQty = Math.max(variant.step, pieceQty - variant.step)">−</button>
-                        <span class="piece-qty" x-text="pieceQty"></span>
+                                @click="pieceQty = Math.max(variant.step, pieceQty - variant.step)" aria-label="تقليل">−</button>
+                        <div class="weight-mid">
+                            <span class="piece-qty" x-text="pieceQty"></span>
+                        </div>
                         <button type="button" class="weight-step-btn"
-                                @click="pieceQty = pieceQty + variant.step">+</button>
-                        <span class="weight-strip-total" x-text="pieceLineTotal()"></span>
+                                @click="pieceQty = pieceQty + variant.step" aria-label="زيادة">+</button>
                     </div>
                 </div>
             </template>
@@ -105,10 +104,11 @@
                     @click="addToCart()">
                 <template x-if="!loading && !justAdded">
                     <span class="add-btn-inner">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
-                        <span x-text="canAdd ? addBtnLabel() : 'نفد المخزون'"></span>
+                        <span class="add-btn-txt" x-text="canAdd ? 'أضف للسلة' : 'نفد المخزون'"></span>
+                        <span class="add-btn-price" x-show="canAdd" x-text="fmt(lineTotalMinor()) + ' ج.م'"></span>
                     </span>
                 </template>
                 <template x-if="loading"><span>جارٍ الإضافة…</span></template>
