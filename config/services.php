@@ -45,4 +45,23 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp (Green API) — إشعار صاحب المتجر بطلب جديد
+    |--------------------------------------------------------------------------
+    |
+    | لا يستخدم Meta Cloud API. فعّل WHATSAPP_NOTIFY_ENABLED بعد ربط Instance.
+    |
+    */
+    'whatsapp' => [
+        'notify_enabled' => (bool) env('WHATSAPP_NOTIFY_ENABLED', false),
+
+        'green_api' => [
+            'base_url'    => env('GREEN_API_BASE_URL', 'https://api.green-api.com'),
+            'instance_id' => env('GREEN_API_INSTANCE_ID', ''),
+            'token'       => env('GREEN_API_TOKEN', ''),
+            'timeout'     => (int) env('GREEN_API_TIMEOUT', 15),
+        ],
+    ],
+
 ];

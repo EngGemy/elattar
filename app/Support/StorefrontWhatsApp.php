@@ -22,19 +22,23 @@ final class StorefrontWhatsApp
     {
         $order->loadMissing(['lines', 'customer']);
 
-        $addr = $order->shipping_address ?? [];
-        $shop = ShopSettings::name();
-        $msg  = "🌿 *طلب جديد — {$shop}*\n\n";
-        $msg .= "📋 رقم الطلب: *{$order->number}*\n";
-        $msg .= '👤 العميل: ' . ($order->customer?->name ?? $addr['recipient_name'] ?? '—') . "\n";
-        $msg .= '📞 الهاتف: ' . ($order->customer?->phone ?? $addr['phone'] ?? '—') . "\n";
+        $addr         = $order->shipping_address ?? [];
+        $customerName = $order->customer?->name ?? $addr['recipient_name'] ?? '—';
+        $customerPhone = $order->customer?->phone ?? $addr['phone'] ?? '—';
+
+        $msg = "🔔 *طلب جديد في متجرك!*\n\n";
+        $msg .= "📋 رقم الطلب: *#{$order->number}*\n";
+        $msg .= "👤 العميل: {$customerName} — {$customerPhone}\n";
 
         if (! empty($addr)) {
-            $msg .= '📍 العنوان: ' . trim(implode(' — ', array_filter([
+            $location = trim(implode(' — ', array_filter([
                 $addr['governorate'] ?? '',
                 $addr['city'] ?? '',
                 $addr['street'] ?? '',
-            ]))) . "\n";
+            ])));
+            if ($location !== '') {
+                $msg .= "📍 العنوان: {$location}\n";
+            }
         }
 
         if (! empty($addr['payment_method'])) {
@@ -51,10 +55,19 @@ final class StorefrontWhatsApp
 
         $msg .= "\n🛒 *الأصناف:*\n";
         foreach ($order->lines as $i => $line) {
-            $msg .= ($i + 1) . '. ' . $line->name_snapshot . ' — ' . $line->qty . ' ' . $line->unit->labelAr() . ' = ' . $line->line_total_minor->format() . "\n";
+            $msg .= ($i + 1) . '. ' . $line->name_snapshot
+                . ' × ' . $line->qty . ' ' . $line->unit->labelAr()
+                . ' = ' . $line->line_total_minor->format() . "\n";
         }
 
-        $msg .= "\n💰 *الإجمالي: {$order->total_minor->format()}*";
+        $msg .= "\n💰 *الإجمالي: {$order->total_minor->format()}*\n";
+
+        try {
+            $dashboardUrl = route('filament.admin.sales.resources.orders.view', ['record' => $order->id]);
+            $msg .= "\n🔗 عرض الطلب في لوحة التحكم:\n{$dashboardUrl}";
+        } catch (\Throwable) {
+            // تجاهل إن لم يكن مسار Filament متاحًا في السياق الحالي
+        }
 
         return $msg;
     }
