@@ -55,8 +55,32 @@
   font-family:var(--font-thuluth);font-size:clamp(1.45rem,6vw,1.9rem);
   margin:6px 0 8px;line-height:1.3;font-weight:700;
 }
-.big-price{font-family:var(--font-ui);color:var(--emerald);font-size:1.45rem;font-weight:700;margin-bottom:8px}
+.big-price{font-family:var(--font-ui);margin-bottom:8px}
+.big-price-board{
+  display:grid;grid-template-columns:1fr;gap:8px;
+}
+.big-price-board.is-weighted{grid-template-columns:1.2fr 1fr}
+@media(max-width:360px){.big-price-board.is-weighted{grid-template-columns:1fr}}
+.big-price-tile{
+  border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0;
+}
+.big-price-tile--kg{
+  background:linear-gradient(155deg,#12352b 0%,#1a3a2f 55%,#0f241c 100%);
+  color:#eef1ee;box-shadow:0 12px 28px -14px rgba(11,22,18,.45);
+}
+.big-price-tile--g{
+  background:linear-gradient(160deg,rgba(224,162,26,.16),rgba(255,255,255,.7));
+  border:1px solid rgba(224,162,26,.3);
+}
+.big-price-tile .val{font-size:clamp(1.15rem,5vw,1.45rem);font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}
+.big-price-tile--kg .val{color:var(--gold-light)}
+.big-price-tile--g .val{color:var(--emerald)}
+.big-price-tile .meta{font-size:.72rem;font-weight:700;opacity:.85}
+.big-price-tile--kg .meta{color:rgba(238,241,238,.78)}
+.big-price-tile--g .meta{color:var(--ink-soft)}
+@media(max-width:360px){.big-price-board{grid-template-columns:1fr}}
 .big-price small{font-size:.9rem;color:var(--ink-soft);font-weight:500}
+.big-price-gram{display:none}
 .long-desc{color:var(--ink-soft);line-height:1.7;font-size:.9rem;margin:10px 0 16px}
 
 .stock-badge{
@@ -83,10 +107,13 @@
 .quick-weights::-webkit-scrollbar{display:none}
 .qw-btn{
   flex-shrink:0;background:var(--parchment);border:1px solid var(--hair);border-radius:12px;
-  padding:8px 12px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--ink-soft);font-family:var(--font-ui);
+  padding:7px 10px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--ink-soft);font-family:var(--font-ui);
+  display:inline-flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2;
 }
+.qw-btn small{font-size:.62rem;font-weight:700;color:var(--emerald);opacity:.9}
 .qw-btn.active{background:var(--emerald);color:#fff;border-color:var(--emerald)}
-.qw-btn--more{min-width:38px;text-align:center;background:transparent;font-weight:700}
+.qw-btn.active small{color:rgba(255,255,255,.92)}
+.qw-btn--more{min-width:38px;text-align:center;background:transparent;font-weight:700;display:inline-flex;justify-content:center}
 
 /* LTR stepper so − / + never flip or get clipped in RTL */
 .qty-strip{
@@ -206,9 +233,17 @@ body.has-product-dock{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px)
       <p class="cat-label">{{ $product->category?->name }}</p>
       <h1>{{ $product->name }}</h1>
 
-      <div class="big-price">
-        <span x-text="currentVariant ? fmt(currentVariant.price_minor) : '—'"></span>
-        <small x-text="currentVariant?.is_weighted ? '/ كجم' : ('/ ' + (currentVariant?.unit_label ?? ''))"></small>
+      <div class="big-price" x-show="currentVariant" x-cloak>
+        <div class="big-price-board" :class="currentVariant?.is_weighted ? 'is-weighted' : 'is-piece'">
+          <div class="big-price-tile big-price-tile--kg">
+            <span class="val" x-text="fmt(currentVariant.price_minor).replace(/\s*ج\.م\s*$/u,'')"></span>
+            <span class="meta" x-text="currentVariant.is_weighted ? 'ج.م للكيلو' : ('ج.م / ' + (currentVariant.unit_label || ''))"></span>
+          </div>
+          <div class="big-price-tile big-price-tile--g" x-show="currentVariant.is_weighted">
+            <span class="val" x-text="fmt(Math.round(currentVariant.price_minor / 1000)).replace(/\s*ج\.م\s*$/u,'')"></span>
+            <span class="meta">ج.م للجرام</span>
+          </div>
+        </div>
       </div>
 
       <div class="stock-badge" :class="stockStatus === 'out' ? 'out-of-stock' : 'in-stock'">
@@ -238,7 +273,10 @@ body.has-product-dock{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px)
         <div x-show="currentVariant?.is_weighted" x-cloak>
           <div class="quick-weights">
             <template x-for="g in primaryQuickWeights" :key="g">
-              <button type="button" @click="qty = g" :class="qty === g ? 'active' : ''" class="qw-btn" x-text="weightLabel(g)"></button>
+              <button type="button" @click="qty = g" :class="qty === g ? 'active' : ''" class="qw-btn">
+                <span x-text="weightLabel(g)"></span>
+                <small x-text="weightPrice(g)"></small>
+              </button>
             </template>
             <button type="button" class="qw-btn qw-btn--more"
                     :class="showExtraQuickWeights ? 'active' : ''"
@@ -247,7 +285,10 @@ body.has-product-dock{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px)
           </div>
           <div class="quick-weights" x-show="showExtraQuickWeights" x-transition.opacity.duration.200ms>
             <template x-for="g in extraQuickWeights" :key="g">
-              <button type="button" @click="qty = g" :class="qty === g ? 'active' : ''" class="qw-btn" x-text="weightLabel(g)"></button>
+              <button type="button" @click="qty = g" :class="qty === g ? 'active' : ''" class="qw-btn">
+                <span x-text="weightLabel(g)"></span>
+                <small x-text="weightPrice(g)"></small>
+              </button>
             </template>
           </div>
         </div>
@@ -331,6 +372,12 @@ function productPage(variants, defaultVariant) {
             if (g >= 1000) return (g / 1000) + ' كيلو';
             if (g === 500) return '½ كيلو';
             return g + ' جم';
+        },
+
+        weightPrice(g) {
+            if (!this.currentVariant) return '';
+            const minor = Math.round(this.currentVariant.price_minor * g / 1000);
+            return this.fmt(minor);
         },
 
         snapQty() {

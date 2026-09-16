@@ -18,18 +18,19 @@
 }
 .cat-search .box{position:relative;flex:1;min-width:0}
 .cat-search input{
-  width:100%;height:44px;border:1.5px solid var(--hair);border-radius:14px;
-  padding:0 40px 0 12px;font-size:16px;background:var(--card);outline:none;
-  font-family:var(--font-ui);
+  width:100%;height:46px;border:1.5px solid var(--hair);border-radius:14px;
+  padding:0 42px 0 14px;font-size:16px;background:var(--card);outline:none;
+  font-family:var(--font-ui);box-shadow:0 8px 22px -18px rgba(11,22,18,.22);
 }
-.cat-search input:focus{border-color:var(--gold)}
+.cat-search input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,162,26,.12)}
 .cat-search svg{
   position:absolute;right:12px;top:50%;transform:translateY(-50%);
   width:17px;height:17px;color:var(--ink-soft);pointer-events:none;
 }
 .cat-search button{
-  height:44px;padding:0 14px;border:none;border-radius:14px;
-  background:var(--emerald);color:#fff;font-family:var(--font-ui);font-weight:700;font-size:.82rem;
+  height:46px;padding:0 16px;border:none;border-radius:14px;
+  background:var(--emerald);color:#fff;font-family:var(--font-ui);font-weight:700;font-size:.84rem;
+  box-shadow:0 8px 20px -12px rgba(26,58,47,.5);
 }
 
 .cat-scroll{

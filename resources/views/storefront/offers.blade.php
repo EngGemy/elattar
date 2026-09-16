@@ -18,11 +18,13 @@
 .off-search{display:flex;gap:8px;padding:0 14px 8px}
 .off-search .box{position:relative;flex:1}
 .off-search input{
-  width:100%;height:44px;border:1.5px solid var(--hair);border-radius:14px;
-  padding:0 40px 0 12px;font-size:16px;background:var(--card);outline:none;font-family:var(--font-ui);
+  width:100%;height:46px;border:1.5px solid var(--hair);border-radius:14px;
+  padding:0 42px 0 14px;font-size:16px;background:var(--card);outline:none;font-family:var(--font-ui);
+  box-shadow:0 8px 22px -18px rgba(11,22,18,.22);
 }
+.off-search input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,162,26,.12)}
 .off-search svg{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--ink-soft)}
-.off-search button{height:44px;padding:0 14px;border:none;border-radius:14px;background:var(--emerald);color:#fff;font-weight:700;font-family:var(--font-ui);font-size:.82rem}
+.off-search button{height:46px;padding:0 16px;border:none;border-radius:14px;background:var(--emerald);color:#fff;font-weight:700;font-family:var(--font-ui);font-size:.84rem;box-shadow:0 8px 20px -12px rgba(26,58,47,.5)}
 .off-scroll{display:flex;gap:7px;overflow-x:auto;padding:0 14px;scrollbar-width:none;scroll-snap-type:x mandatory}
 .off-scroll::-webkit-scrollbar{display:none}
 .off-chip{

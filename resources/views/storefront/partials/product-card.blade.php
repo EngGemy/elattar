@@ -23,12 +23,33 @@
             @endif
         </div>
 
-        <div class="price">
-            <template x-if="variant?.compare_at_fmt">
-                <del class="price-compare" x-text="variant.compare_at_fmt"></del>
-            </template>
-            <span x-text="priceLabel()"></span>
-            <small x-text="unitSuffix()"></small>
+        <div class="price" aria-label="السعر">
+            @if(!empty($p['compare_at_fmt']))
+                <del class="price-compare" x-show="variant?.compare_at_fmt" x-text="variant.compare_at_fmt">{{ $p['compare_at_fmt'] }}</del>
+            @else
+                <del class="price-compare" x-show="variant?.compare_at_fmt" x-cloak x-text="variant.compare_at_fmt"></del>
+            @endif
+
+            <div class="price-board" :class="variant?.is_weighted ? 'is-weighted' : 'is-piece'">
+                <div class="price-tile price-tile--main">
+                    <span class="price-tile-val" x-text="priceAmount()">{{ preg_replace('/\s*ج\.م\s*$/u', '', $p['price_fmt'] ?? '—') }}</span>
+                    <span class="price-tile-meta">
+                        <span class="price-tile-cur">ج.م</span>
+                        <span class="price-tile-unit" x-text="unitShort()">{{ !empty($p['is_weighted']) ? 'للكيلو' : ('/' . ($p['unit_label'] ?? 'قطعة')) }}</span>
+                    </span>
+                </div>
+                <div class="price-tile price-tile--gram" x-show="variant?.is_weighted" @if(empty($p['is_weighted'])) x-cloak @endif>
+                    <span class="price-tile-val" x-text="gramAmount()">
+                        @if(!empty($p['is_weighted']) && !empty($p['price_minor']))
+                            {{ number_format(((int) $p['price_minor']) / 1000 / 100, 2, '.', ',') }}
+                        @endif
+                    </span>
+                    <span class="price-tile-meta">
+                        <span class="price-tile-cur">ج.م</span>
+                        <span class="price-tile-unit">للجرام</span>
+                    </span>
+                </div>
+            </div>
         </div>
 
         <template x-if="product.variants.length > 1">
@@ -59,10 +80,12 @@
 
                     <div class="weight-chips" role="group" aria-label="كميات سريعة">
                         <template x-for="w in primaryWeights" :key="w.g">
-                            <button type="button" class="weight-chip"
+                            <button type="button" class="weight-chip weight-chip--priced"
                                     :class="weightGrams === w.g ? 'sel' : ''"
-                                    @click="weightGrams = w.g; snapWeight()"
-                                    x-text="w.label"></button>
+                                    @click="weightGrams = w.g; snapWeight()">
+                                <span x-text="w.label"></span>
+                                <small x-text="weightPrice(w.g)"></small>
+                            </button>
                         </template>
                         <template x-if="extraWeights.length">
                             <button type="button" class="weight-chip weight-chip--more"
@@ -74,10 +97,12 @@
 
                     <div class="weight-chips weight-chips--extra" x-show="showExtraWeights" x-transition.opacity.duration.200ms>
                         <template x-for="w in extraWeights" :key="w.g">
-                            <button type="button" class="weight-chip"
+                            <button type="button" class="weight-chip weight-chip--priced"
                                     :class="weightGrams === w.g ? 'sel' : ''"
-                                    @click="weightGrams = w.g; snapWeight()"
-                                    x-text="w.label"></button>
+                                    @click="weightGrams = w.g; snapWeight()">
+                                <span x-text="w.label"></span>
+                                <small x-text="weightPrice(w.g)"></small>
+                            </button>
                         </template>
                     </div>
                 </div>

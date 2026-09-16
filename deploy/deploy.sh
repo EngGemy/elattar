@@ -23,4 +23,10 @@ php artisan view:cache
 
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
+# أعد تشغيل طابور واتساب إن كان السكربت موجودًا
+if [[ -f deploy/manage-whatsapp.sh ]]; then
+  bash deploy/manage-whatsapp.sh restart 2>/dev/null || true
+fi
+
 echo "==> Deploy finished OK"
+echo "    واتساب/طابور: bash deploy/manage-whatsapp.sh status"

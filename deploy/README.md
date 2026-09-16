@@ -294,7 +294,45 @@ Merge only when CI is green.
 
 ---
 
-## 10. Security reminders
+## 11. WhatsApp order alerts + queue (cPanel)
+
+إشعار تلقائي لصاحب المتجر عند طلب أونلاين عبر **Green API** + طابور Laravel.
+
+### 11.1 إعداد مرة واحدة على السيرفر
+
+```bash
+cd ~/elattar
+git pull origin main
+bash deploy/manage-whatsapp.sh setup
+bash deploy/manage-whatsapp.sh start
+bash deploy/manage-whatsapp.sh cron
+```
+
+انسخ أسطر الـ cron المطبوعة إلى **cPanel → Cron Jobs** (كل دقيقة). الـ cron يضمن استمرار معالجة الطابور حتى لو توقف الـ worker.
+
+### 11.2 أوامر الإدارة
+
+```bash
+bash deploy/manage-whatsapp.sh status   # حالة الإعداد والطابور
+bash deploy/manage-whatsapp.sh test     # تجربة على آخر طلب أونلاين
+bash deploy/manage-whatsapp.sh logs     # لوق الإرسال
+bash deploy/manage-whatsapp.sh failed   # jobs فاشلة
+bash deploy/manage-whatsapp.sh restart  # بعد كل deploy يدوي
+```
+
+### 11.3 متغيرات `.env` المطلوبة
+
+```dotenv
+QUEUE_CONNECTION=database
+WHATSAPP_NOTIFY_ENABLED=true
+STOREFRONT_WHATSAPP=2010XXXXXXXX
+GREEN_API_BASE_URL=https://api.green-api.com
+GREEN_API_INSTANCE_ID=...
+GREEN_API_TOKEN=...
+GREEN_API_TIMEOUT=15
+```
+
+بدون `WHATSAPP_NOTIFY_ENABLED=true` والمفاتيح، الطلب يكتمل عادي ولن يُرسل واتساب.
 
 - Never commit `.env` or `storage/*.key`.
 - Keep `APP_DEBUG=false` in production.

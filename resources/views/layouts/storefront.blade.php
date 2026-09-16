@@ -243,78 +243,130 @@ header.top{
   position:absolute;bottom:8px;right:8px;background:var(--gold);color:var(--night);
   font-family:var(--font-ui);font-size:.6rem;padding:3px 8px;border-radius:8px;font-weight:700
 }
-.card .body{padding:9px 10px 11px;display:flex;flex-direction:column;gap:6px;flex:1;min-width:0;min-height:0;overflow:hidden}
+.card .body{padding:10px 10px 12px;display:flex;flex-direction:column;gap:7px;flex:1;min-width:0;min-height:0;overflow:hidden}
 .card-head{min-width:0}
-.card h3{font-family:var(--font-ui);font-size:.82rem;font-weight:700;line-height:1.35;color:var(--ink);
+.card h3{font-family:var(--font-ui);font-size:.84rem;font-weight:700;line-height:1.35;color:var(--ink);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0}
 .card h3 a{color:inherit;text-decoration:none}
 .card .desc{display:none}
-.card .price{
-  font-family:var(--font-ui);color:var(--emerald);font-weight:700;font-size:.82rem;
-  display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;min-width:0;
+
+/* Mobile-first price board — kg + gram as twin tiles */
+.card .price{font-family:var(--font-ui);min-width:0;display:flex;flex-direction:column;gap:4px}
+.price-compare{color:var(--ink-soft);font-weight:500;font-size:.68rem;text-decoration:line-through;opacity:.65;padding-inline:2px}
+.price-board{
+  display:grid;grid-template-columns:1fr;gap:5px;min-width:0;
 }
-.card .price > span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.card .price small{color:var(--ink-soft);font-weight:500;font-size:.65rem}
-.price-compare{color:var(--ink-soft);font-weight:500;font-size:.7rem;text-decoration:line-through;opacity:.65}
+.price-board.is-weighted{grid-template-columns:1.15fr .95fr}
+.price-tile{
+  min-width:0;border-radius:12px;padding:7px 8px 6px;
+  display:flex;flex-direction:column;gap:2px;
+  background:linear-gradient(160deg,rgba(26,58,47,.08),rgba(26,58,47,.03));
+  border:1px solid rgba(26,58,47,.12);
+}
+.price-tile--main{
+  background:linear-gradient(155deg,#12352b 0%,#1a3a2f 55%,#0f241c 100%);
+  border-color:transparent;color:#eef1ee;
+  box-shadow:0 8px 18px -12px rgba(11,22,18,.45);
+}
+.price-tile--gram{
+  background:linear-gradient(160deg,rgba(224,162,26,.14),rgba(255,255,255,.55));
+  border-color:rgba(224,162,26,.28);
+}
+.price-tile-val{
+  font-weight:800;font-size:clamp(.86rem,3.8vw,1.02rem);line-height:1.15;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.price-tile--main .price-tile-val{color:var(--gold-light)}
+.price-tile--gram .price-tile-val{color:var(--emerald)}
+.price-tile-meta{
+  display:flex;align-items:center;gap:4px;flex-wrap:wrap;
+  font-size:.58rem;font-weight:700;line-height:1.2;opacity:.88;
+}
+.price-tile--main .price-tile-meta{color:rgba(238,241,238,.78)}
+.price-tile--gram .price-tile-meta{color:var(--ink-soft)}
+.price-tile-unit{
+  padding:1px 5px;border-radius:999px;font-size:.54rem;font-weight:800;
+  background:rgba(255,255,255,.12);
+}
+.price-tile--gram .price-tile-unit{background:rgba(224,162,26,.18);color:var(--gold-deep,#9a6b12)}
 
 .variant-chips,.weight-chips{
-  display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
-  margin-inline:-2px;padding-inline:2px;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;
 }
-.variant-chips::-webkit-scrollbar,.weight-chips::-webkit-scrollbar{display:none}
+.weight-chips--extra{margin-top:2px}
 .weight-chip{
-  flex-shrink:0;padding:5px 8px;border-radius:9px;border:1px solid var(--hair);background:var(--parchment);
-  font-size:.65rem;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.15s;font-family:var(--font-ui);white-space:nowrap
+  min-width:0;padding:7px 6px;border-radius:11px;border:1px solid var(--hair);background:var(--parchment);
+  font-size:.68rem;font-weight:700;color:var(--ink-soft);cursor:pointer;transition:.15s;font-family:var(--font-ui);
+  text-align:center;line-height:1.2;
 }
-.weight-chip.sel{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+.weight-chip--priced{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:44px;
+}
+.weight-chip--priced small{
+  font-size:.62rem;font-weight:800;color:var(--emerald);
+}
+.weight-chip.sel{background:var(--emerald);color:#fff;border-color:var(--emerald);box-shadow:0 6px 14px -8px rgba(26,58,47,.55)}
+.weight-chip.sel small{color:rgba(255,255,255,.95)}
 .weight-chip:disabled{opacity:.4;cursor:not-allowed}
-.weight-chip--more{min-width:30px;text-align:center;background:transparent;font-weight:700}
+.weight-chip--more{min-height:44px;display:grid;place-items:center;background:transparent;font-weight:800;font-size:.9rem}
+.variant-chips{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}
 
-.card-purchase{margin-top:auto;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card-purchase{margin-top:auto;display:flex;flex-direction:column;gap:7px;min-width:0}
 .weight-panel,.piece-panel{display:flex;flex-direction:column;gap:6px;min-width:0}
 
 /* Stepper — LTR so − / + never overflow in RTL cards */
 .weight-strip{
   display:flex;align-items:center;justify-content:space-between;gap:4px;
-  background:var(--parchment-2);border:1px solid var(--hair);border-radius:11px;padding:3px;
+  background:var(--parchment-2);border:1px solid var(--hair);border-radius:12px;padding:4px;
   width:100%;box-sizing:border-box;min-width:0;direction:ltr;
 }
 .weight-step-btn{
-  width:30px;height:30px;border:none;border-radius:9px;background:#fff;cursor:pointer;
-  font-weight:700;font-size:1rem;color:var(--ink);flex-shrink:0;line-height:1;
-  display:grid;place-items:center;box-shadow:0 1px 2px rgba(0,0,0,.04);
+  width:36px;height:36px;border:none;border-radius:10px;background:#fff;cursor:pointer;
+  font-weight:700;font-size:1.1rem;color:var(--ink);flex-shrink:0;line-height:1;
+  display:grid;place-items:center;box-shadow:0 1px 2px rgba(0,0,0,.05);
 }
 .weight-mid{flex:1;display:flex;align-items:center;justify-content:center;gap:3px;min-width:0}
 .weight-input{
-  width:42px;max-width:45%;text-align:center;padding:2px 0;border:none;background:transparent;
-  font-size:.8rem;font-weight:700;-moz-appearance:textfield;font-family:var(--font-ui);min-width:0;
+  width:48px;max-width:48%;text-align:center;padding:2px 0;border:none;background:transparent;
+  font-size:.88rem;font-weight:800;-moz-appearance:textfield;font-family:var(--font-ui);min-width:0;
 }
 .weight-input::-webkit-outer-spin-button,.weight-input::-webkit-inner-spin-button{-webkit-appearance:none}
-.weight-unit{font-size:.62rem;font-weight:600;color:var(--ink-soft);flex-shrink:0}
-.piece-qty{min-width:24px;text-align:center;font-weight:700;font-size:.85rem;font-family:var(--font-ui)}
-.piece-panel .unit-chip{font-size:.68rem;font-weight:600;color:var(--ink-soft)}
+.weight-unit{font-size:.68rem;font-weight:700;color:var(--ink-soft);flex-shrink:0}
+.piece-qty{min-width:24px;text-align:center;font-weight:800;font-size:.9rem;font-family:var(--font-ui)}
+.piece-panel .unit-chip{font-size:.7rem;font-weight:700;color:var(--ink-soft)}
 
 .add-btn{
-  background:var(--emerald);color:#fff;border:none;padding:9px 8px;border-radius:11px;
-  cursor:pointer;font-weight:700;font-size:.72rem;width:100%;transition:.22s;font-family:var(--font-ui);
-  min-width:0;overflow:hidden;
+  background:linear-gradient(160deg,#1f4a3c,#12352b);color:#fff;border:none;padding:11px 8px;border-radius:12px;
+  cursor:pointer;font-weight:800;font-size:.78rem;width:100%;transition:.22s;font-family:var(--font-ui);
+  min-width:0;overflow:hidden;min-height:44px;
+  box-shadow:0 10px 22px -14px rgba(11,22,18,.55);
 }
 .add-btn .add-btn-inner{
-  display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;width:100%;
+  display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;width:100%;
 }
 .add-btn .add-btn-txt{flex-shrink:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .add-btn .add-btn-price{
-  flex-shrink:0;opacity:.92;font-size:.68rem;padding-inline-start:4px;
-  border-inline-start:1px solid rgba(255,255,255,.28);margin-inline-start:2px;
+  flex-shrink:0;opacity:.95;font-size:.74rem;padding-inline-start:6px;
+  border-inline-start:1px solid rgba(255,255,255,.28);margin-inline-start:2px;font-weight:800;
 }
-.add-btn:hover:not(:disabled){background:var(--emerald-light)}
-.add-btn.added{background:#168a4a}
-.add-btn.disabled{opacity:.45;cursor:not-allowed}
+.add-btn:hover:not(:disabled){filter:brightness(1.06)}
+.add-btn.added{background:linear-gradient(160deg,#1a8a4f,#147040)}
+.add-btn.disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 
-@media(max-width:380px){
-  .add-btn .add-btn-price{display:none}
-  .card .body{padding:8px}
-  .weight-step-btn{width:28px;height:28px}
+@media(max-width:360px){
+  .price-board.is-weighted{grid-template-columns:1fr;gap:4px}
+  .price-tile{padding:6px 8px}
+  .weight-chip--priced{min-height:40px;padding:6px 4px}
+}
+
+@media(min-width:720px){
+  .price-board.is-weighted{grid-template-columns:1.2fr 1fr;gap:8px}
+  .price-tile{padding:9px 10px;border-radius:14px}
+  .price-tile-val{font-size:1.05rem}
+  .variant-chips,.weight-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .variant-chips::-webkit-scrollbar,.weight-chips::-webkit-scrollbar{display:none}
+  .weight-chip--priced{min-width:72px;min-height:48px}
 }
 
 /* ── Footer ── */
@@ -647,10 +699,35 @@ function productCard(product) {
             return v.price_fmt;
         },
 
+        priceAmount() {
+            const v = this.variant;
+            if (!v || !v.price_fmt) return '—';
+            return String(v.price_fmt).replace(/\s*ج\.م\s*$/u, '').trim();
+        },
+
         unitSuffix() {
             const v = this.variant;
             if (!v) return '';
-            return v.is_weighted ? '/ كجم' : ('/ ' + v.label);
+            return v.is_weighted ? '/ كجم' : ('/ ' + (v.label || v.unit_label || ''));
+        },
+
+        unitShort() {
+            const v = this.variant;
+            if (!v) return '';
+            return v.is_weighted ? 'للكيلو' : ('/ ' + (v.label || v.unit_label || ''));
+        },
+
+        gramPriceLabel() {
+            const v = this.variant;
+            if (!v || !v.is_weighted) return '';
+            const minor = Math.round(v.price_minor / 1000);
+            return this.fmt(minor) + ' ج.م / جم';
+        },
+
+        gramAmount() {
+            const v = this.variant;
+            if (!v || !v.is_weighted) return '';
+            return this.fmt(Math.round(v.price_minor / 1000));
         },
 
         weightPrice(g) {
