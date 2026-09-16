@@ -109,7 +109,7 @@
     <h1>إتمام الطلب</h1>
   </div>
   <p class="app-check-sub">خطوة واحدة وتصلك مشترياتك لباب البيت</p>
-  <div class="delivery-pill">توصيل {{ $shop['governorate'] }} · {{ implode(' و', array_slice($shop['delivery_cities'], 0, 2)) }}</div>
+  <div class="delivery-pill">توصيل لكل محافظات مصر</div>
 
   @if($errors->any())
   <div class="store-alert" role="alert" style="margin-bottom:14px">
@@ -170,11 +170,11 @@
         @error('phone')<span class="err">{{ $message }}</span>@enderror
       </div>
       <div class="field">
-        <label>المنطقة <span class="req">*</span></label>
+        <label>المحافظة <span class="req">*</span></label>
         <select name="city" required>
-          <option value="">اختر المنطقة</option>
+          <option value="">اختر المحافظة</option>
           @foreach(\App\Support\StorefrontCheckout::cities() as $city)
-            <option value="{{ $city }}" {{ old('city') === $city ? 'selected' : '' }}>{{ $city }}</option>
+            <option value="{{ $city }}" {{ old('city', \App\Support\StorefrontCheckout::governorate()) === $city ? 'selected' : '' }}>{{ $city }}</option>
           @endforeach
         </select>
         @error('city')<span class="err">{{ $message }}</span>@enderror

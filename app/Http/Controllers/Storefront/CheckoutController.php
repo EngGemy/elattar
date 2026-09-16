@@ -100,7 +100,7 @@ class CheckoutController extends Controller
         $shippingAddress = [
             'recipient_name' => $data['name'],
             'phone'          => $data['phone'],
-            'governorate'    => StorefrontCheckout::governorate(),
+            'governorate'    => $data['city'],
             'city'           => $data['city'],
             'street'         => $data['address'],
             'building'       => '',

@@ -80,7 +80,7 @@ class CheckoutTest extends TestCase
             ->post(route('storefront.checkout.store'), [
             'name'           => 'أحمد محمد',
             'phone'          => '01012345678',
-            'city'           => 'المنصورة',
+            'city'           => 'الدقهلية',
             'address'        => 'شارع الجيش — عمارة 5',
             'payment_method' => 'cod',
             'notes'          => null,

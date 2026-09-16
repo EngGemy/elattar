@@ -92,10 +92,10 @@ class ManageGeneralSettings extends Page implements HasForms
                         ->tel()
                         ->maxLength(20),
                     TextInput::make('whatsapp')
-                        ->label('واتساب (بدون +)')
+                        ->label('واتساب')
                         ->required()
                         ->maxLength(20)
-                        ->helperText('مثال: 201012345678'),
+                        ->helperText('رقم مصري بمفتاح الدولة — مثال: 201012345678 أو 01012345678 (يُضاف 20 / 002 تلقائيًا)'),
                     TextInput::make('instapay')
                         ->label('رقم إنستاباي')
                         ->maxLength(20),
@@ -110,13 +110,14 @@ class ManageGeneralSettings extends Page implements HasForms
 
                 Section::make('التوصيل')->schema([
                     TextInput::make('governorate')
-                        ->label('المحافظة')
+                        ->label('المحافظة الافتراضية')
                         ->required()
-                        ->maxLength(60),
+                        ->maxLength(60)
+                        ->helperText('تُعرض كاختيار مبدئي في صفحة إتمام الطلب'),
                     TagsInput::make('delivery_cities')
-                        ->label('مدن التوصيل')
+                        ->label('مدن مميزة (للواجهة)')
                         ->placeholder('أضف مدينة')
-                        ->required(),
+                        ->helperText('للعرض في الرئيسية فقط — قائمة الطلب تشمل كل محافظات مصر'),
                 ])->columns(2),
 
                 Section::make('الصفحة الرئيسية')->schema([
@@ -156,6 +157,8 @@ class ManageGeneralSettings extends Page implements HasForms
                 'delivery_cities' => is_array($value) ? array_values($value) : [],
                 'logo_path'       => is_array($value) ? ($value[0] ?? null) : $value,
                 'phone', 'instapay', 'vodafone_cash' => $value !== null && $value !== '' ? (string) $value : null,
+                'whatsapp'        => \App\Support\PhoneNumber::digitsOnly((string) ($value ?? ''))
+                    ?? preg_replace('/\D/', '', (string) ($value ?? '')),
                 default           => $value ?? '',
             };
         }

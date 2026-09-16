@@ -47,12 +47,19 @@ final class ShopSettings
 
     public static function whatsapp(): string
     {
-        return (string) self::data()['whatsapp'];
+        $raw = (string) self::data()['whatsapp'];
+
+        // مفتاح مصر الدولي 20 (= 0020 عند الاتصال) لروابط واتساب
+        return PhoneNumber::digitsOnly($raw) ?? self::digits($raw);
     }
 
     public static function whatsappUrl(?string $message = null): string
     {
-        $base = 'https://wa.me/' . self::whatsapp();
+        $phone = self::whatsapp();
+
+        // wa.me يحتاج الرقم الدولي بدون + وبدون 00 — مصر: 20XXXXXXXXXX
+        // إن وُجد الرقم محليًا (01…) يُحوَّل تلقائيًا لمفتاح مصر
+        $base = 'https://wa.me/' . $phone;
 
         return $message ? $base . '?text=' . rawurlencode($message) : $base;
     }

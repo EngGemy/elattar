@@ -11,10 +11,16 @@ final class StorefrontCheckout
         return (string) ShopSettings::data()['governorate'];
     }
 
-    /** @return list<string> */
+    /** @return list<string> محافظات مصر للتوصيل */
     public static function cities(): array
     {
-        return ShopSettings::data()['delivery_cities'];
+        return EgyptLocations::governorates();
+    }
+
+    /** @deprecated استخدم cities() — أصبحت تعرض كل المحافظات */
+    public static function deliveryAreas(): array
+    {
+        return self::cities();
     }
 
     public static function instapayNumber(): string
