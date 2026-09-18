@@ -93,34 +93,12 @@
 /* Home product search — mobile-first sticky finder */
 .home-search{
   position:sticky;top:calc(var(--chrome-h) + 4px);z-index:40;
-  display:flex;gap:8px;align-items:stretch;
   margin:14px auto 0;padding:8px 14px;
   max-width:560px;
   background:linear-gradient(180deg,rgba(238,241,238,.96),rgba(238,241,238,.88));
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border-radius:0;
 }
-.home-search .box{position:relative;flex:1;min-width:0}
-.home-search input{
-  width:100%;height:50px;border:1.5px solid rgba(26,58,47,.14);border-radius:16px;
-  padding:0 46px 0 14px;font-size:16px;background:var(--card);outline:none;
-  font-family:var(--font-ui);font-weight:600;
-  box-shadow:0 12px 28px -16px rgba(11,22,18,.28), inset 0 1px 0 rgba(255,255,255,.7);
-}
-.home-search input:focus{
-  border-color:var(--gold);
-  box-shadow:0 0 0 3px rgba(224,162,26,.16), 0 12px 28px -16px rgba(11,22,18,.28);
-}
-.home-search svg{
-  position:absolute;right:14px;top:50%;transform:translateY(-50%);
-  width:18px;height:18px;color:var(--emerald);pointer-events:none;
-}
-.home-search button{
-  height:50px;padding:0 18px;border:none;border-radius:16px;
-  background:linear-gradient(155deg,#1f4a3c,#12352b);color:#fff;
-  font-family:var(--font-ui);font-weight:800;font-size:.88rem;
-  box-shadow:0 12px 24px -12px rgba(26,58,47,.55);white-space:nowrap;
-}
+.home-search .store-suggest{z-index:55}
 
 .home-pad{padding:22px 0 28px}
 .sec{margin-bottom:28px}
@@ -217,7 +195,6 @@
   .app-rail a{padding:14px 8px 12px;font-size:.72rem;border-radius:18px}
   .app-rail .ico{width:42px;height:42px;border-radius:14px}
   .home-search{max-width:720px;padding:10px 20px;margin-top:16px;border-radius:20px}
-  .home-search input,.home-search button{height:52px;border-radius:18px}
   .home-pad{padding:36px 0 64px}
   .sec{margin-bottom:42px}
   .sec-bar h2{font-size:1.85rem}
@@ -272,14 +249,8 @@
   <a href="{{ \App\Support\ShopSettings::whatsappUrl('مرحبًا') }}" target="_blank" rel="noopener"><span class="ico">💬</span>واتساب</a>
 </nav>
 
-<form class="home-search" action="{{ route('storefront.catalog') }}" method="GET" role="search">
-  <div class="box">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-    </svg>
-    <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث عن بهار أو منتج…" autocomplete="off" enterkeyhint="search">
-  </div>
-  <button type="submit">بحث</button>
+<form class="home-search" action="{{ route('storefront.catalog') }}" method="GET" role="search" @submit.prevent>
+  @include('storefront.partials.search-box')
 </form>
 
 <div class="mq" aria-hidden="true">

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 // ── المتجر الإلكتروني (عام — بلا تسجيل دخول)
 Route::get('/',                    [StorefrontController::class, 'home'])->name('storefront.home');
+Route::get('/products/suggest',    [StorefrontController::class, 'suggest'])->name('storefront.catalog.suggest');
 Route::get('/products',            [StorefrontController::class, 'catalog'])->name('storefront.catalog');
 Route::get('/products/{slug}',     [StorefrontController::class, 'product'])->name('storefront.product');
 Route::get('/offers',              [OfferController::class, 'index'])->name('storefront.offers');

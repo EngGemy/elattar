@@ -8,30 +8,15 @@
 .cat-app{max-width:720px;margin:0 auto;padding-bottom:20px}
 
 .cat-sticky{
-  position:sticky;top:var(--chrome-h);z-index:45;
+  position:sticky;top:var(--chrome-h);z-index:55;
   background:rgba(238,241,238,.97);backdrop-filter:blur(14px);
   border-bottom:1px solid var(--hair);
   padding:8px 0 6px;
 }
 .cat-search{
-  display:flex;gap:8px;align-items:stretch;padding:0 14px 8px;
+  display:block;padding:0 14px 8px;
 }
-.cat-search .box{position:relative;flex:1;min-width:0}
-.cat-search input{
-  width:100%;height:46px;border:1.5px solid var(--hair);border-radius:14px;
-  padding:0 42px 0 14px;font-size:16px;background:var(--card);outline:none;
-  font-family:var(--font-ui);box-shadow:0 8px 22px -18px rgba(11,22,18,.22);
-}
-.cat-search input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,162,26,.12)}
-.cat-search svg{
-  position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  width:17px;height:17px;color:var(--ink-soft);pointer-events:none;
-}
-.cat-search button{
-  height:46px;padding:0 16px;border:none;border-radius:14px;
-  background:var(--emerald);color:#fff;font-family:var(--font-ui);font-weight:700;font-size:.84rem;
-  box-shadow:0 8px 20px -12px rgba(26,58,47,.5);
-}
+.cat-search .store-suggest{z-index:55}
 
 .cat-scroll{
   display:flex;gap:7px;overflow-x:auto;padding:0 14px 6px;
@@ -111,13 +96,9 @@
 
 <div class="cat-app">
   <div class="cat-sticky">
-    <form method="GET" action="{{ route('storefront.catalog') }}" id="filter-form">
+    <form method="GET" action="{{ route('storefront.catalog') }}" id="filter-form" @submit.prevent>
       <div class="cat-search">
-        <div class="box">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث عن منتج…" autocomplete="off">
-        </div>
-        <button type="submit">بحث</button>
+        @include('storefront.partials.search-box', ['compact' => true, 'placeholder' => 'ابحث عن منتج…'])
       </div>
 
       <div class="cat-scroll" role="tablist" aria-label="التصنيفات">

@@ -11,6 +11,7 @@ use App\Domain\Inventory\Models\Warehouse;
 use App\Domain\Pricing\Models\Promotion;
 use App\Domain\Pricing\Services\PromotionResolver;
 use App\Domain\Shared\ValueObjects\Money;
+use App\Support\ProductSearch;
 use App\Support\ShopSettings;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -71,7 +72,7 @@ class StorefrontController extends Controller
         }
 
         if ($request->filled('q')) {
-            $query->where('name', 'like', '%' . $request->q . '%');
+            ProductSearch::apply($query, (string) $request->q);
         }
 
         $sort = $request->get('sort', 'newest');
@@ -82,7 +83,7 @@ class StorefrontController extends Controller
             'price_desc' => $query->join('product_variants as pv_sort', function ($j) {
                 $j->on('pv_sort.product_id', '=', 'products.id')->where('pv_sort.is_default', true);
             })->orderByDesc('pv_sort.price_minor')->select('products.*'),
-            default      => $query->orderByDesc('products.created_at'),
+            default      => $query->orderByDesc('is_featured')->orderBy('sort_order')->orderByDesc('products.created_at'),
         };
 
         $products = $query->paginate(24)->withQueryString();
@@ -92,6 +93,16 @@ class StorefrontController extends Controller
         $products->getCollection()->transform(fn ($p) => $this->mapProduct($p, $warehouseId, $promoMap));
 
         return view('storefront.catalog', compact('categories', 'products', 'sort'));
+    }
+
+    public function suggest(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+
+        return response()->json([
+            'q'     => $q,
+            'items' => ProductSearch::suggest($q, 8),
+        ]);
     }
 
     public function product(string $slug)
