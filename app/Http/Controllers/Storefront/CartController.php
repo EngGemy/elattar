@@ -126,6 +126,7 @@ class CartController extends Controller
                 'ok'         => true,
                 'message'    => 'تم إضافة المنتج للسلة',
                 'cart_count' => $cartCount,
+                'added_qty'  => $qty,
                 'line_qty'   => $cart[$key]['qty'],
                 'line'       => $cart[$key],
             ]);

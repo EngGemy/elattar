@@ -291,26 +291,36 @@ header.top{
 }
 .price-tile--gram .price-tile-unit{background:rgba(224,162,26,.18);color:var(--gold-deep,#9a6b12)}
 
-.variant-chips,.weight-chips{
+.variant-chips{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;
 }
-.weight-chips--extra{margin-top:2px}
 .weight-chip{
   min-width:0;padding:7px 6px;border-radius:11px;border:1px solid var(--hair);background:var(--parchment);
   font-size:.68rem;font-weight:700;color:var(--ink-soft);cursor:pointer;transition:.15s;font-family:var(--font-ui);
   text-align:center;line-height:1.2;
 }
-.weight-chip--priced{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:44px;
-}
-.weight-chip--priced small{
-  font-size:.62rem;font-weight:800;color:var(--emerald);
-}
 .weight-chip.sel{background:var(--emerald);color:#fff;border-color:var(--emerald);box-shadow:0 6px 14px -8px rgba(26,58,47,.55)}
-.weight-chip.sel small{color:rgba(255,255,255,.95)}
 .weight-chip:disabled{opacity:.4;cursor:not-allowed}
-.weight-chip--more{min-height:44px;display:grid;place-items:center;background:transparent;font-weight:800;font-size:.9rem}
-.variant-chips{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}
+
+/* أوزان سريعة — شبكة واضحة واحترافية */
+.weight-presets{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+}
+.weight-preset{
+  min-width:0;min-height:52px;padding:7px 4px;border-radius:12px;
+  border:1.5px solid var(--hair);background:var(--parchment);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  cursor:pointer;transition:transform .15s,border-color .15s,background .15s,box-shadow .15s;
+  font-family:var(--font-ui);color:var(--ink);line-height:1.15;
+}
+.weight-preset:active{transform:scale(.97)}
+.weight-preset-label{font-size:.72rem;font-weight:800;white-space:nowrap}
+.weight-preset-price{font-size:.62rem;font-weight:700;color:var(--emerald);opacity:.95}
+.weight-preset.sel{
+  background:linear-gradient(155deg,#1a3a2f,#12352b);color:#fff;border-color:transparent;
+  box-shadow:0 8px 18px -10px rgba(11,22,18,.5);
+}
+.weight-preset.sel .weight-preset-price{color:var(--gold-light)}
 
 .card-purchase{margin-top:auto;display:flex;flex-direction:column;gap:7px;min-width:0}
 .weight-panel,.piece-panel{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -357,16 +367,20 @@ header.top{
 @media(max-width:360px){
   .price-board.is-weighted{grid-template-columns:1fr;gap:4px}
   .price-tile{padding:6px 8px}
-  .weight-chip--priced{min-height:40px;padding:6px 4px}
+  .weight-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .weight-preset{min-height:48px}
 }
 
 @media(min-width:720px){
   .price-board.is-weighted{grid-template-columns:1.2fr 1fr;gap:8px}
   .price-tile{padding:9px 10px;border-radius:14px}
   .price-tile-val{font-size:1.05rem}
-  .variant-chips,.weight-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
-  .variant-chips::-webkit-scrollbar,.weight-chips::-webkit-scrollbar{display:none}
-  .weight-chip--priced{min-width:72px;min-height:48px}
+  .variant-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .variant-chips::-webkit-scrollbar{display:none}
+  .weight-presets{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+  .weight-preset{min-height:56px;border-radius:14px}
+  .weight-preset-label{font-size:.78rem}
+  .weight-preset-price{font-size:.66rem}
 }
 
 /* ── Live search suggest ── */
@@ -698,24 +712,13 @@ function productCard(product) {
         pieceQty: 1,
         loading: false,
         justAdded: false,
-        showExtraWeights: false,
-        weights: [
+        presetWeights: [
             { g: 50, label: '50 جم' },
             { g: 100, label: '100 جم' },
             { g: 250, label: '250 جم' },
             { g: 500, label: '½ كيلو' },
             { g: 1000, label: '1 كيلو' },
-            { g: 25, label: '25 جم' },
-            { g: 1, label: '1 جم' },
         ],
-
-        get primaryWeights() {
-            return this.weights.slice(0, 4);
-        },
-
-        get extraWeights() {
-            return this.weights.slice(4);
-        },
 
         get variant() {
             return this.product.variants.find(v => v.id === this.selectedVariantId) || this.product.variants[0];
@@ -725,42 +728,58 @@ function productCard(product) {
             return this.variant && this.variant.in_stock;
         },
 
+        weightStep() {
+            const step = Number(this.variant?.step);
+            return step > 0 ? step : 1;
+        },
+
+        minWeight() {
+            return this.weightStep();
+        },
+
         init() {
             const v = this.variant;
-            if (v) {
-                this.pieceQty = v.step || 1;
-                this.weightGrams = Math.max(v.step || 1, 100);
-            }
+            if (!v) return;
+            this.pieceQty = this.weightStep();
+            this.weightGrams = Math.max(this.weightStep(), 100);
+            this.snapWeight();
         },
 
         selectVariant(id) {
             this.selectedVariantId = id;
-            this.showExtraWeights = false;
             const v = this.variant;
-            if (v) {
-                this.pieceQty = v.step || 1;
-                this.weightGrams = Math.max(v.step || 1, 100);
-            }
+            if (!v) return;
+            this.pieceQty = this.weightStep();
+            this.weightGrams = Math.max(this.weightStep(), 100);
+            this.snapWeight();
+        },
+
+        isWeightSelected(g) {
+            return Number(this.weightGrams) === Number(g);
+        },
+
+        setWeight(g) {
+            const grams = Number(g);
+            if (!Number.isFinite(grams) || grams <= 0) return;
+            // الأوزان الجاهزة تُثبت كما هي — بدون تقريب يغيّر 250 إلى قيمة أخرى
+            this.weightGrams = grams;
         },
 
         normalizeWeight(qty) {
-            const v = this.variant;
-            if (!v) return qty;
-            const step = v.step || 1;
-            return Math.max(step, Math.round(qty / step) * step);
+            const step = this.weightStep();
+            const raw = Number(qty);
+            if (!Number.isFinite(raw) || raw <= 0) return step;
+            return Math.max(step, Math.round(raw / step) * step);
         },
 
         snapWeight() {
-            const v = this.variant;
-            if (!v) return;
-            this.weightGrams = this.normalizeWeight(this.weightGrams || v.step || 1);
+            this.weightGrams = this.normalizeWeight(this.weightGrams);
         },
 
         adjustWeight(delta) {
-            const v = this.variant;
-            if (!v) return;
-            const step = v.step || 1;
-            this.weightGrams = Math.max(step, this.normalizeWeight((this.weightGrams || step) + delta * step));
+            const step = this.weightStep();
+            const current = Number(this.weightGrams) || step;
+            this.weightGrams = Math.max(step, this.normalizeWeight(current + Number(delta) * step));
         },
 
         priceLabel() {
@@ -803,7 +822,7 @@ function productCard(product) {
         weightPrice(g) {
             const v = this.variant;
             if (!v) return '';
-            const minor = Math.round(v.price_minor * g / 1000);
+            const minor = Math.round(Number(v.price_minor) * Number(g) / 1000);
             return this.fmt(minor) + ' ج.م';
         },
 
@@ -817,10 +836,10 @@ function productCard(product) {
             const v = this.variant;
             if (!v) return 0;
             if (v.is_weighted) {
-                const g = this.normalizeWeight(this.weightGrams || v.step || 1);
-                return Math.round(v.price_minor * g / 1000);
+                const g = this.orderQty();
+                return Math.round(Number(v.price_minor) * g / 1000);
             }
-            return Math.round(v.price_minor * this.pieceQty);
+            return Math.round(Number(v.price_minor) * Number(this.pieceQty));
         },
 
         addBtnLabel() {
@@ -838,14 +857,24 @@ function productCard(product) {
         orderQty() {
             const v = this.variant;
             if (!v) return 0;
-            if (v.is_weighted) return this.normalizeWeight(this.weightGrams || v.step || 1);
-            return this.pieceQty;
+            if (v.is_weighted) {
+                const g = Number(this.weightGrams);
+                // لو الرقم من الأوزان الجاهزة — أرسله كما هو
+                if (this.presetWeights.some(w => Number(w.g) === g)) return g;
+                return this.normalizeWeight(g || this.weightStep());
+            }
+            return Number(this.pieceQty) || this.weightStep();
         },
 
         async addToCart() {
             if (!this.canAdd || this.loading) return;
             const v = this.variant;
+            // ثبّت الكمية قبل أي تحديث للواجهة
             const qty = this.orderQty();
+            if (!qty || qty <= 0) {
+                storeToast('اختر كمية صحيحة أولاً');
+                return;
+            }
             this.loading = true;
             try {
                 const res = await fetch('{{ route('storefront.cart.add') }}', {
@@ -865,10 +894,15 @@ function productCard(product) {
                     badge.style.display = data.cart_count > 0 ? '' : 'none';
                 }
                 this.justAdded = true;
-                const qtyLabel = v.is_weighted
-                    ? (Math.round(data.line_qty || qty) + ' جم')
-                    : String(data.line_qty || qty);
-                storeToast(this.product.name + ' · في السلة: ' + qtyLabel);
+                const addedQty = Number(data.added_qty ?? qty);
+                const totalInCart = Number(data.line_qty ?? addedQty);
+                const addedLabel = v.is_weighted ? (Math.round(addedQty) + ' جم') : String(addedQty);
+                const totalLabel = v.is_weighted ? (Math.round(totalInCart) + ' جم') : String(totalInCart);
+                storeToast(
+                    Math.round(totalInCart) !== Math.round(addedQty)
+                        ? (this.product.name + ' · أُضيف ' + addedLabel + ' (في السلة: ' + totalLabel + ')')
+                        : (this.product.name + ' · ' + addedLabel + ' في السلة')
+                );
                 setTimeout(() => this.justAdded = false, 1500);
             } catch (e) {
                 storeToast(e.message || 'حدث خطأ');

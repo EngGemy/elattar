@@ -71,37 +71,21 @@
                         <button type="button" class="weight-step-btn" @click="adjustWeight(-1)" aria-label="تقليل">−</button>
                         <div class="weight-mid">
                             <input type="number" class="weight-input" x-model.number="weightGrams"
-                                   :min="variant.step || 1" :step="variant.step || 1"
-                                   @change="snapWeight()" aria-label="الكمية بالجرام">
+                                   :min="minWeight()" :step="weightStep()"
+                                   @change="snapWeight()" @blur="snapWeight()"
+                                   inputmode="numeric" aria-label="الكمية بالجرام">
                             <span class="weight-unit">جم</span>
                         </div>
                         <button type="button" class="weight-step-btn" @click="adjustWeight(1)" aria-label="زيادة">+</button>
                     </div>
 
-                    <div class="weight-chips" role="group" aria-label="كميات سريعة">
-                        <template x-for="w in primaryWeights" :key="w.g">
-                            <button type="button" class="weight-chip weight-chip--priced"
-                                    :class="weightGrams === w.g ? 'sel' : ''"
-                                    @click="weightGrams = w.g; snapWeight()">
-                                <span x-text="w.label"></span>
-                                <small x-text="weightPrice(w.g)"></small>
-                            </button>
-                        </template>
-                        <template x-if="extraWeights.length">
-                            <button type="button" class="weight-chip weight-chip--more"
-                                    :class="showExtraWeights ? 'sel' : ''"
-                                    @click="showExtraWeights = !showExtraWeights"
-                                    x-text="showExtraWeights ? 'أقل' : '···'"></button>
-                        </template>
-                    </div>
-
-                    <div class="weight-chips weight-chips--extra" x-show="showExtraWeights" x-transition.opacity.duration.200ms>
-                        <template x-for="w in extraWeights" :key="w.g">
-                            <button type="button" class="weight-chip weight-chip--priced"
-                                    :class="weightGrams === w.g ? 'sel' : ''"
-                                    @click="weightGrams = w.g; snapWeight()">
-                                <span x-text="w.label"></span>
-                                <small x-text="weightPrice(w.g)"></small>
+                    <div class="weight-presets" role="group" aria-label="كميات سريعة">
+                        <template x-for="w in presetWeights" :key="w.g">
+                            <button type="button" class="weight-preset"
+                                    :class="isWeightSelected(w.g) ? 'sel' : ''"
+                                    @click.prevent="setWeight(w.g)">
+                                <span class="weight-preset-label" x-text="w.label"></span>
+                                <span class="weight-preset-price" x-text="weightPrice(w.g)"></span>
                             </button>
                         </template>
                     </div>
@@ -113,12 +97,12 @@
                     <span class="unit-chip" x-text="variant.label"></span>
                     <div class="weight-strip" dir="ltr">
                         <button type="button" class="weight-step-btn"
-                                @click="pieceQty = Math.max(variant.step, pieceQty - variant.step)" aria-label="تقليل">−</button>
+                                @click="pieceQty = Math.max(Number(variant.step) || 1, Number(pieceQty) - (Number(variant.step) || 1))" aria-label="تقليل">−</button>
                         <div class="weight-mid">
                             <span class="piece-qty" x-text="pieceQty"></span>
                         </div>
                         <button type="button" class="weight-step-btn"
-                                @click="pieceQty = pieceQty + variant.step" aria-label="زيادة">+</button>
+                                @click="pieceQty = Number(pieceQty) + (Number(variant.step) || 1)" aria-label="زيادة">+</button>
                     </div>
                 </div>
             </template>
@@ -126,7 +110,7 @@
             <button type="button" class="add-btn"
                     :class="{ 'added': justAdded, 'disabled': !canAdd }"
                     :disabled="!canAdd || loading"
-                    @click="addToCart()">
+                    @click.prevent="addToCart()">
                 <template x-if="!loading && !justAdded">
                     <span class="add-btn-inner">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" aria-hidden="true">

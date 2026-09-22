@@ -103,17 +103,16 @@
 }
 .qty-section h4{font-weight:700;margin-bottom:10px;font-size:.85rem;color:var(--ink-soft);font-family:var(--font-ui)}
 
-.quick-weights{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.quick-weights::-webkit-scrollbar{display:none}
+.quick-weights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+@media(min-width:560px){.quick-weights{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .qw-btn{
-  flex-shrink:0;background:var(--parchment);border:1px solid var(--hair);border-radius:12px;
-  padding:7px 10px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--ink-soft);font-family:var(--font-ui);
-  display:inline-flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2;
+  min-width:0;min-height:54px;background:var(--parchment);border:1.5px solid var(--hair);border-radius:14px;
+  padding:8px 6px;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--ink);font-family:var(--font-ui);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;line-height:1.15;
 }
-.qw-btn small{font-size:.62rem;font-weight:700;color:var(--emerald);opacity:.9}
-.qw-btn.active{background:var(--emerald);color:#fff;border-color:var(--emerald)}
-.qw-btn.active small{color:rgba(255,255,255,.92)}
-.qw-btn--more{min-width:38px;text-align:center;background:transparent;font-weight:700;display:inline-flex;justify-content:center}
+.qw-btn small{font-size:.66rem;font-weight:800;color:var(--emerald)}
+.qw-btn.active{background:linear-gradient(155deg,#1a3a2f,#12352b);color:#fff;border-color:transparent;box-shadow:0 8px 18px -10px rgba(11,22,18,.45)}
+.qw-btn.active small{color:var(--gold-light)}
 
 /* LTR stepper so − / + never flip or get clipped in RTL */
 .qty-strip{
@@ -272,20 +271,8 @@ body.has-product-dock{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px)
 
         <div x-show="currentVariant?.is_weighted" x-cloak>
           <div class="quick-weights">
-            <template x-for="g in primaryQuickWeights" :key="g">
-              <button type="button" @click="qty = g" :class="qty === g ? 'active' : ''" class="qw-btn">
-                <span x-text="weightLabel(g)"></span>
-                <small x-text="weightPrice(g)"></small>
-              </button>
-            </template>
-            <button type="button" class="qw-btn qw-btn--more"
-                    :class="showExtraQuickWeights ? 'active' : ''"
-                    @click="showExtraQuickWeights = !showExtraQuickWeights"
-                    x-text="showExtraQuickWeights ? 'أقل' : '···'"></button>
-          </div>
-          <div class="quick-weights" x-show="showExtraQuickWeights" x-transition.opacity.duration.200ms>
-            <template x-for="g in extraQuickWeights" :key="g">
-              <button type="button" @click="qty = g" :class="qty === g ? 'active' : ''" class="qw-btn">
+            <template x-for="g in quickWeights" :key="g">
+              <button type="button" @click.prevent="setQty(g)" :class="Number(qty) === Number(g) ? 'active' : ''" class="qw-btn">
                 <span x-text="weightLabel(g)"></span>
                 <small x-text="weightPrice(g)"></small>
               </button>
@@ -347,9 +334,7 @@ function productPage(variants, defaultVariant) {
         currentVariant: defaultVariant,
         qty: defaultVariant?.is_weighted ? 100 : (defaultVariant?.step ?? 1),
         activeImage: '{{ $mainImage }}',
-        showExtraQuickWeights: false,
-        primaryQuickWeights: [50, 100, 250, 500],
-        extraQuickWeights: [1000, 25, 1],
+        quickWeights: [50, 100, 250, 500, 1000],
 
         get stockStatus() {
             return this.currentVariant?.in_stock ? 'in' : 'out';
@@ -357,15 +342,21 @@ function productPage(variants, defaultVariant) {
 
         get lineTotal() {
             if (!this.currentVariant) return 0;
+            const q = Number(this.qty) || 0;
             return this.currentVariant.is_weighted
-                ? Math.round(this.currentVariant.price_minor * this.qty / 1000)
-                : Math.round(this.currentVariant.price_minor * this.qty);
+                ? Math.round(this.currentVariant.price_minor * q / 1000)
+                : Math.round(this.currentVariant.price_minor * q);
         },
 
         selectVariant(v) {
             this.currentVariant = v;
-            this.showExtraQuickWeights = false;
-            this.qty = v.is_weighted ? 100 : (v.step ?? 1);
+            this.qty = v.is_weighted ? 100 : (Number(v.step) || 1);
+        },
+
+        setQty(g) {
+            const n = Number(g);
+            if (!Number.isFinite(n) || n <= 0) return;
+            this.qty = n;
         },
 
         weightLabel(g) {
@@ -381,20 +372,24 @@ function productPage(variants, defaultVariant) {
         },
 
         snapQty() {
-            const step = this.currentVariant?.step ?? 1;
-            const min = step;
-            let q = Number(this.qty) || min;
-            q = Math.max(min, Math.round(q / step) * step);
+            const step = Number(this.currentVariant?.step) || 1;
+            let q = Number(this.qty) || step;
+            // لا تغيّر الأوزان الجاهزة
+            if (this.quickWeights.some(w => Number(w) === q)) {
+                this.qty = q;
+                return;
+            }
+            q = Math.max(step, Math.round(q / step) * step);
             this.qty = q;
         },
 
         increment() {
-            const step = this.currentVariant?.step ?? 1;
+            const step = Number(this.currentVariant?.step) || 1;
             this.qty = (Number(this.qty) || 0) + step;
         },
 
         decrement() {
-            const step = this.currentVariant?.step ?? 1;
+            const step = Number(this.currentVariant?.step) || 1;
             this.qty = Math.max(step, (Number(this.qty) || step) - step);
         },
 
